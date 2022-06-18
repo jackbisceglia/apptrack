@@ -13,8 +13,8 @@ jobs:
     - name: Deploy code to Lambda
       uses: denzalman/lambda-python-action@v2.0.0
       with:
-        lambda_layer_arn: 'arn:aws:lambda:us-east-1:<AWS_ACCOUNT_ID>:layer:<lambda_layer_name>'
-        lambda_function_name: 'lambda_function_name'
+        lambda_layer_arn: 'arn:aws:lambda:us-east-1:020554315612:function:email_new_pittcsc_postings'
+        lambda_function_name: 'email_new_pittcsc_postings'
         lambda_region: 'us-east-1'
         requirements_txt: 'requirements.txt'
       env:
