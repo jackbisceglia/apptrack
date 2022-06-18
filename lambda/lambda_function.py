@@ -1,11 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
-
+from mailjet_rest import Client
 import json
+import os
+from dotenv import load_dotenv
 
 # for dependencies: https://docs.aws.amazon.com/lambda/latest/dg/python-package.html
 
-def lambda_handler(event, context):
+def lambda_handler(event, context):    
     PITTCSC_INTERNSHIP_URL = "https://github.com/pittcsc/Summer2023-Internships"
     page = requests.get(PITTCSC_INTERNSHIP_URL)
     
@@ -21,11 +23,37 @@ def lambda_handler(event, context):
         data.append(cols)
 
     # columns: Name, Locations, Notes
-    for internship in data:
-        print('Name:', internship[0])
-        print('Location:', internship[1])
-        print('Notes:', internship[2])
-        print('')
+    # for internship in data:
+    #     print('Name:', internship[0])
+    #     print('Location:', internship[1])
+    #     print('Notes:', internship[2])
+    #     print('')
+    
+    load_dotenv()
+    mailjet = Client(auth=(os.getenv("MAILJET_API_KEY"), os.getenv("MAILJET_API_SECRET_KEY")), version='v3.1')
+    data = {
+        'Messages': [
+            {
+            "From": {
+                "Email": "nabilbaugher@gmail.com",
+                "Name": "Nabil"
+            },
+            "To": [
+                {
+                "Email": "nabilbaugher@gmail.com",
+                "Name": "Nabil"
+                }
+            ],
+            "Subject": "PittCSC Internship Postings!",
+            "TextPart": "My first Mailjet email",
+            "HTMLPart": table,
+            "CustomID": "testScraper"
+            }
+        ]
+    }
+    result = mailjet.send.create(data=data)
+    print(result.status_code)
+    print(result.json())
         
     return {
         'statusCode': 200,
