@@ -1,22 +1,28 @@
-name: Deploy lambda 
-
+name: Deploy Lambda Function
 on:
   push:
-    branches:
-      - master
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  release:
+    name: Deploy lambda function
+    runs-on: [ubuntu-latest]
     steps:
-    - uses: actions/checkout@master
-    - name: Deploy code to Lambda
-      uses: denzalman/lambda-python-action@v2.0.0
+      - uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        lambda_layer_arn: 'arn:aws:lambda:us-east-1:020554315612:function:email_new_pittcsc_postings'
-        lambda_function_name: 'email_new_pittcsc_postings'
-        lambda_region: 'us-east-1'
-        requirements_txt: 'requirements.txt'
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        role-duration-seconds: 1200
+        role-session-name: MySessionName
+      - name: zip Lambda Function
+        run: |
+          zip -r9 my-deployment-package.zip lambdaFunction.py
+      - name: AWS Deploy
+        run: |
+          aws lambda update-function-code --function-name email_new_pittcsc_postings --zip-file fileb://my-deployment-package.zip
