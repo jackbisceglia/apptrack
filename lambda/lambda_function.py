@@ -30,13 +30,14 @@ def lambda_handler(event, context):
     #     print('')
     
     load_dotenv()
+    print(os.getenv("MAILJET_API_KEY"))
     mailjet = Client(auth=(os.getenv("MAILJET_API_KEY"), os.getenv("MAILJET_API_SECRET_KEY")), version='v3.1')
     data = {
         'Messages': [
             {
             "From": {
-                "Email": "nabilbaugher@gmail.com",
-                "Name": "Nabil"
+                "Email": "nabilb@mit.edu",
+                "Name": "Internship Tracker"
             },
             "To": [
                 {
@@ -46,7 +47,7 @@ def lambda_handler(event, context):
             ],
             "Subject": "PittCSC Internship Postings!",
             "TextPart": "My first Mailjet email",
-            "HTMLPart": table,
+            "HTMLPart": str(table),
             "CustomID": "testScraper"
             }
         ]
