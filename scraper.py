@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 
 import json
 
+# test if deploy works
+
 def lambda_handler(event, context):
     PITTCSC_INTERNSHIP_URL = "https://github.com/pittcsc/Summer2023-Internships"
     page = requests.get(PITTCSC_INTERNSHIP_URL)
