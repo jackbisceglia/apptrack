@@ -18,12 +18,15 @@ type SignUpData struct {
 	listPreferences []string
 }
 
-func UserRoutes(router *mux.Router) {
+func UserRoutes(router *mux.Router, db string) {
+	// Pass db instance to UserCrud to get back User Crud Functions
+	GetUsersByList, InsertUser := crud.UserCrud(db)
+
 	// GET BY LIST TYPE
 	router.HandleFunc("/{listType}", func(w http.ResponseWriter, r *http.Request) {
 		listType := mux.Vars(r)["listType"]
 
-		crud.GetUsersByList(listType)
+		GetUsersByList(listType)
 
 		w.WriteHeader(http.StatusOK)
 	}).Methods("GET")
@@ -41,7 +44,7 @@ func UserRoutes(router *mux.Router) {
 		}
 
 		// Insert user into database
-		success := crud.InsertUser(signUpData.emailAddress, signUpData.listPreferences)
+		success := InsertUser(signUpData.emailAddress, signUpData.listPreferences)
 
 		// Set Response Type on Header
 		w.Header().Set("Content-Type", "application/json")
