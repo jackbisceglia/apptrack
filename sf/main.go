@@ -11,7 +11,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var PORT string = "8080"
+var PORT string = ":8080"
 
 const (
 	host     = "localhost"
