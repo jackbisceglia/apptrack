@@ -11,29 +11,30 @@ from dotenv import load_dotenv
 
 def lambda_handler(event, context):
     # get intended recipients from database
-    intern_recipients = get_recipients_from_db(is_intern=True)
-    new_grad_recipients = get_recipients_from_db(is_intern=False)
+    intern_recipients = json.loads(get_recipients_from_db(is_intern=True))
+    new_grad_recipients = json.loads(get_recipients_from_db(is_intern=False))
     
     # fetch old postings from database
-    intern_db_postings = get_postings_from_db(is_intern=True)
-    new_grad_db_postings = get_postings_from_db(is_intern=False)
+    intern_db_postings_data = json.loads(get_postings_from_db(is_intern=True))
+    new_grad_db_postings_data = json.loads(get_postings_from_db(is_intern=False))
     
-    # fetch postings from web
-    intern_web_postings = get_postings_from_web(is_intern=True)
-    new_grad_web_postings = get_postings_from_web(is_intern=False)
-    print(new_grad_web_postings)
+    # fetch all postings from web
+    intern_web_postings_data = json.loads(get_postings_from_web(is_intern=True))
+    new_grad_web_postings_data = json.loads(get_postings_from_web(is_intern=False))
     
     # calculate which postings are new
-    new_intern_postings = get_new_postings(intern_db_postings, intern_web_postings)
-    new_new_grad_postings = get_new_postings(new_grad_db_postings, new_grad_web_postings)
+    new_intern_postings = get_new_postings(intern_db_postings_data, intern_web_postings_data)
+    new_new_grad_postings = get_new_postings(new_grad_db_postings_data, new_grad_web_postings_data)
     
-    # # send out new intern postings if there are any
-    # if len(new_intern_postings) != 0:
-    #     send_mail(intern_recipients, new_intern_postings)
+    # send out new intern postings if there are any
+    if len(new_intern_postings) != 0:
+        intern_table = postings_to_table(new_intern_postings)
+        send_mail(intern_recipients, intern_table)
     
-    # # send out new intern postings if there are any
-    # if len(new_new_grad_postings) != 0:
-    #     send_mail(new_grad_recipients, new_intern_postings)
+    # send out new intern postings if there are any
+    if len(new_new_grad_postings) != 0:
+        new_grad_table = postings_to_table(new_new_grad_postings)
+        send_mail(new_grad_recipients, new_grad_table)
     
     return {
         'statusCode': 200,
@@ -41,12 +42,40 @@ def lambda_handler(event, context):
     }
     
 def get_recipients_from_db(is_intern):
-    # TODO: implement
-    return None
+    # id, time created, email, prefs,
+    result = {
+        'recipients': [
+            {
+                'id': 'sampleid',
+                'time_created': 'sampletime',
+                'email': 'nabilbaugher@gmail.com',
+                'prefs': 'BOTH',
+            },
+        ]
+    } 
+    return json.dumps(result)
 
 def get_postings_from_db(is_intern):
-    # TODO: implement
-    return None
+    if is_intern:
+        return json.dumps({'postings': []})
+    # new grad test
+    result = {
+        'postings': [
+            {
+                'name': 'Akuna Capital',
+                'url': 'https://akunacapital.com/careers?experience=junior&department=development#careers',
+                'location': 'Chicago',
+                'notes': 'Various Junior Developer Positions',
+            },
+            {
+                'name': 'VMware',
+                'url': 'https://careers.vmware.com/main/jobs/R2212905?lang=en-us',
+                'location': 'Palo Alto, California; Atlanta, Georgia',
+                'notes': 'Launch New Grad SWE',
+            },
+        ]
+    } 
+    return json.dumps(result)
 
 def get_postings_from_web(is_intern):
     PITTCSC_INTERNSHIP_URL = 'https://github.com/pittcsc/Summer2023-Internships'
@@ -62,47 +91,78 @@ def get_postings_from_web(is_intern):
 
     for row in rows:
         cols = row.find_all('td')
-        cols = [ele.text.strip() for ele in cols]
-        data.append(cols)
+        cols_text = [ele.text.strip() for ele in cols]
+        url = cols[0].find('a')['href']
+        cols_text.insert(1, url)
+        data.append(cols_text)
     
-    # columns: Name, Locations, Notes
-    # for internship in data:
-    #     print('Name:', internship[0])
-    #     print('Location:', internship[1])
-    #     print('Notes:', internship[2])
-    #     print('')
-    return data
+    # transform data to json style
+    json_result = {
+        'postings': []
+    }
 
-def get_new_postings():
-    # TODO: implement
-    return None
+    for posting in data:
+        json_posting = {
+            'name': posting[0],
+            'url': posting[1],
+            'location': posting[2],
+            'notes': posting[3],
+        }
+        json_result['postings'].append(json_posting)
+        
+    return json.dumps(json_result)
 
-def send_mail(recipients, table):
+def get_new_postings(db_postings_data, web_postings_data):
+    # print(type(db_postings), db_postings)
+    # key: email, value: json posting
+    db_map = {posting['url'] : posting for posting in db_postings_data['postings']}
+    web_map = {posting['url'] : posting for posting in web_postings_data['postings']}
+    
+    # calculate set difference to get new emails
+    new_urls = set(web_map.keys()).difference(set(db_map.keys()))
+    
+    result = []
+    for url in new_urls:
+        result.append(web_map[url])
+    return result
+    
+def postings_to_table(postings):
+    table = '<table><thead><tr><th>Name</th><th>Location</th><th>Notes</th></tr></thead><tbody>'
+    for posting in postings:
+        row = '<tr>'
+        row += '<td><a href='+posting['url']+' rel="nofollow">'+posting['name']+'</a></td>'
+        row += '<td>'+posting['location']+'</td>'
+        row += '<td>'+posting['notes']+'</td>'
+        row += '</tr>'
+        table += row
+    table += '</tbody></table>'
+    return table
+
+def send_mail(recipients_data, table_str):
     # setup
     FROM_EMAIL = 'nabilb@mit.edu'
     load_dotenv()
     mailjet = Client(auth=(os.getenv("MAILJET_API_KEY"), os.getenv("MAILJET_API_SECRET_KEY")), version='v3.1')
     
     # send data
-    for name, email in recipients:
+    for recipient in recipients_data['recipients']:
         errors = [] 
         data = {
             'Messages': [
                 {
-                "From": {
-                    "Email": "nabilb@mit.edu",
-                    "Name": "Internship Tracker"
-                },
-                "To": [
-                    {
-                    "Email": email,
-                    "Name": name
-                    }
-                ],
-                "Subject": "PittCSC Summer 2023 Internship Postings!",
-                "TextPart": "Table with postings.",
-                "HTMLPart": str(table),
-                "CustomID": "pittcscScraper"
+                    "From": {
+                        "Email": "nabilb@mit.edu",
+                        "Name": "Internship Tracker"
+                    },
+                    "To": [
+                        {
+                            "Email": recipient['email'],
+                        }
+                    ],
+                    "Subject": "PittCSC Summer 2023 Internship Postings!",
+                    "TextPart": "Table with postings.",
+                    "HTMLPart": table_str,
+                    "CustomID": "pittcscScraper"
                 }
             ]
         }
@@ -110,5 +170,4 @@ def send_mail(recipients, table):
         print(result.status_code)
         print(result.json())
         if int(result.status_code) != 200:
-            errors.append
-        return 
+            errors.append((result.status_code, recipient['email']))
