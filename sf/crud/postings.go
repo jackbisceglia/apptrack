@@ -3,6 +3,7 @@ package crud
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strconv"
 )
 
@@ -12,9 +13,40 @@ type PostingData struct {
 	Notes string `json:"notes"`
 	IsIntern bool `json:"isIntern"`
 	Url string `json:"url"`
+	Id string
+	CreatedAt string
 }
 
-func PostingsCrud(db *sql.DB) (func([]PostingData) bool){
+func PostingsCrud(db *sql.DB) (func() []PostingData, func([]PostingData) bool){
+	GetPostings := func() []PostingData {
+		var posting PostingData
+		SQL_STATEMENT := `
+			SELECT * FROM postings
+		`
+
+		rows, err := db.Query(SQL_STATEMENT)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer rows.Close()
+	
+		var postings []PostingData
+		for rows.Next() {
+			err := rows.Scan(&posting.Id, &posting.Company, &posting.Location, &posting.Notes, &posting.CreatedAt, &posting.IsIntern, &posting.Url)
+			if err != nil {
+				log.Fatal(err)
+			}
+	
+			postings = append(postings, posting)
+		}
+
+		if err := rows.Err(); err != nil {
+			log.Fatal(err)
+		}
+
+		return postings
+	}
+
 	InsertPosting := func(posts []PostingData) bool {
 		SQL_STATEMENT := `
 			INSERT INTO postings (company, location, notes, isintern, url)
@@ -46,5 +78,5 @@ func PostingsCrud(db *sql.DB) (func([]PostingData) bool){
 		return true
 	}
 
-	return InsertPosting
+	return GetPostings, InsertPosting
 }
