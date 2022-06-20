@@ -71,7 +71,7 @@ func apiEntry() {
 
 	// Invoke Route Listeners, passing in DB Instance and SubRotuers
 	routes.UserRoutes(userRouter, db)
-	routes.PostingRoutes(postingsRouter)
+	routes.PostingRoutes(postingsRouter, db)
 
 	// Listen at 8080
 	http.ListenAndServe(PORT, router)
