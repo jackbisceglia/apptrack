@@ -30,8 +30,6 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 		
 		users := GetUsersByList(listType)
 
-		fmt.Printf("%v", users)
-
 		w.Header().Set("Content-Type", "application/json")
 		res, err := json.Marshal(users)
 		if err != nil {

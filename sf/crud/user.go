@@ -16,12 +16,18 @@ type User struct {
 func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool) {
 	GetUsersByList := func(preferenceList string) []User {
 		var user User
-
+		db_values := []interface{}{}
 		SQL_STATEMENT := `
-			SELECT * FROM users where preferencelist = $1
+			SELECT * FROM users
 		`
 
-		rows, err := db.Query(SQL_STATEMENT, preferenceList)
+		if preferenceList != "BOTH" {
+			SQL_STATEMENT = fmt.Sprintf("%s WHERE preferenceList = $1 or preferenceList = $2", SQL_STATEMENT)
+			db_values = append(db_values, "BOTH", preferenceList)
+		}
+
+
+		rows, err := db.Query(SQL_STATEMENT, db_values...)
 		if err != nil {
 			log.Fatal(err)
 		}

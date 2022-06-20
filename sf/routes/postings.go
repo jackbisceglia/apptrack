@@ -16,8 +16,6 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		var postingData []crud.PostingData
 
-		fmt.Printf("%v", postingData)
-
 		err := json.NewDecoder(r.Body).Decode(&postingData)
 		if err != nil {
 			fmt.Printf("error here")
