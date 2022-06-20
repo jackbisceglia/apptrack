@@ -10,9 +10,39 @@ import (
 	"github.com/jackbisceglia/internship-tracker/crud"
 )
 
-func PostingRoutes(router *mux.Router, db *sql.DB) {
-	InsertPosting := crud.PostingsCrud(db)
+type PostResponse struct {
+	InternPosts []crud.PostingData
+	NewGradPosts []crud.PostingData
+}
 
+func PostingRoutes(router *mux.Router, db *sql.DB) {
+	GetPostings, InsertPosting := crud.PostingsCrud(db)
+
+	// Get all postings from database
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		postings := GetPostings()
+		internList := make([]crud.PostingData, 0)
+		newGradList := make([]crud.PostingData, 0)
+
+		for _, posting := range postings {
+			if posting.IsIntern {
+				internList = append(internList, posting)
+			} else {
+				newGradList = append(newGradList, posting)
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		res, err := json.Marshal(PostResponse{internList, newGradList})
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(res)
+	}).Methods("GET")
+	
+	// POST posting(s) into database
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		var postingData []crud.PostingData
 
@@ -42,5 +72,5 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 	
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(res)
-	})
+	}).Methods("POST")
 }
