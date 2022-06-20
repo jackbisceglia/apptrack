@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	crud "github.com/jackbisceglia/internship-tracker/crud"
+	"github.com/jackbisceglia/internship-tracker/crud"
 
 	"github.com/gorilla/mux"
 )
