@@ -9,18 +9,14 @@ from dotenv import load_dotenv
 # user: id, timestamp, email, prefs
 # prefs: intern, new grad, or both
 
-def lambda_handler(event, context):
-    # get intended recipients from database
-    intern_recipients = json.loads(get_recipients_from_db(is_intern=True))
-    new_grad_recipients = json.loads(get_recipients_from_db(is_intern=False))
-    
+def lambda_handler(event, context):    
     # fetch old postings from database
     intern_db_postings_data = json.loads(get_postings_from_db(is_intern=True))
     new_grad_db_postings_data = json.loads(get_postings_from_db(is_intern=False))
     
     # fetch all postings from web
-    intern_web_postings_data = json.loads(get_postings_from_web(is_intern=True))
-    new_grad_web_postings_data = json.loads(get_postings_from_web(is_intern=False))
+    intern_web_postings_data = get_postings_from_web(is_intern=True)
+    new_grad_web_postings_data = get_postings_from_web(is_intern=False)
     
     # calculate which postings are new
     new_intern_postings = get_new_postings(intern_db_postings_data, intern_web_postings_data)
@@ -28,13 +24,17 @@ def lambda_handler(event, context):
     
     # send out new intern postings if there are any
     if len(new_intern_postings) != 0:
+        intern_recipients = json.loads(get_recipients_from_db(is_intern=True))
         intern_table = postings_to_table(new_intern_postings)
         send_mail(intern_recipients, intern_table)
+        update_db_postings(new_intern_postings, is_intern=False)
     
     # send out new intern postings if there are any
     if len(new_new_grad_postings) != 0:
+        new_grad_recipients = json.loads(get_recipients_from_db(is_intern=False))
         new_grad_table = postings_to_table(new_new_grad_postings)
         send_mail(new_grad_recipients, new_grad_table)
+        update_db_postings(new_new_grad_postings, is_intern=False)
     
     return {
         'statusCode': 200,
@@ -42,7 +42,7 @@ def lambda_handler(event, context):
     }
     
 def get_recipients_from_db(is_intern):
-    # id, time created, email, prefs,
+    GET_URL = '' if is_intern else ''
     result = {
         'recipients': [
             {
@@ -56,6 +56,7 @@ def get_recipients_from_db(is_intern):
     return json.dumps(result)
 
 def get_postings_from_db(is_intern):
+    GET_URL = '' if is_intern else ''
     if is_intern:
         return json.dumps({'postings': []})
     # new grad test
@@ -97,9 +98,7 @@ def get_postings_from_web(is_intern):
         data.append(cols_text)
     
     # transform data to json style
-    json_result = {
-        'postings': []
-    }
+    result = []
 
     for posting in data:
         json_posting = {
@@ -107,16 +106,17 @@ def get_postings_from_web(is_intern):
             'url': posting[1],
             'location': posting[2],
             'notes': posting[3],
+            'isIntern': is_intern,
         }
-        json_result['postings'].append(json_posting)
+        result.append(json_posting)
         
-    return json.dumps(json_result)
+    return result
 
 def get_new_postings(db_postings_data, web_postings_data):
     # print(type(db_postings), db_postings)
     # key: email, value: json posting
     db_map = {posting['url'] : posting for posting in db_postings_data['postings']}
-    web_map = {posting['url'] : posting for posting in web_postings_data['postings']}
+    web_map = {posting['url'] : posting for posting in web_postings_data}
     
     # calculate set difference to get new emails
     new_urls = set(web_map.keys()).difference(set(db_map.keys()))
@@ -125,6 +125,13 @@ def get_new_postings(db_postings_data, web_postings_data):
     for url in new_urls:
         result.append(web_map[url])
     return result
+
+def update_db_postings(new_postings, is_intern):
+    POST_URL = 'http://localhost:8080/postings/'
+    response = requests.post(POST_URL, json=new_postings)
+    print('Attempting to update database with new '+ ('intern ' if is_intern else 'new grad ') +'postings...')
+    print(response)
+
     
 def postings_to_table(postings):
     table = '<table><thead><tr><th>Name</th><th>Location</th><th>Notes</th></tr></thead><tbody>'
