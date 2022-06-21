@@ -12,4 +12,6 @@
    - Look up error on Stack Overflow to try to fix so that dev server can run
    - Just run `go run main.go`, which will execute and run our Go server, but doesn't have hot reload. If you're not working on the API, this should be sufficient since hot reload won't be very important
 
-### Frontend `/'
+### Frontend `/react-ts'
+- Have Yarn installed
+- Run `yarn install` to install dependencies
