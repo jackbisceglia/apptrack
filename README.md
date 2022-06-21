@@ -1,4 +1,10 @@
 ﻿# internship-tracker
+ 
+**Directory Structure (city: service)**
+- `sf/` &rarr; Golang REST API
+- `montreal/` &rarr; AWS Lambda
+- `tokyo/` &rarr; React/Typescript Web App 
+- `istanbul` &rarr; Database Read Script (JS)
 
 ## Setup
 ### Go API `./sf`
