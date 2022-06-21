@@ -1,2 +1,2 @@
-lambda/package/** linguist-vendored
-lambda/my-deployment-package/** linguist-vendored
+lambda/package/** linguist-vendored=false
+lambda/my-deployment-package/** linguist-vendored=false
