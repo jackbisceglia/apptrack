@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 # user: id, timestamp, email, prefs
 # prefs: intern, new grad, or both
 
-def lambda_handler(event, context):    
+def lambda_handler(event=None, context=None):    
     # fetch old postings from database
     intern_db_postings = get_postings_from_db(is_intern=True)
     new_grad_db_postings = get_postings_from_db(is_intern=False)
@@ -95,7 +95,7 @@ def get_postings_from_web(is_intern):
 
     for posting in data:
         json_posting = {
-            'name': posting[0],
+            'company': posting[0],
             'url': posting[1],
             'location': posting[2],
             'notes': posting[3],
