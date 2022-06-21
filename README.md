@@ -12,7 +12,7 @@
 - Navigate to `sf` directory: `cd sf`
 - Put .env file in here (be sure to be in `/sf`) (*.env file posted in slack*)
 - Run `go install github.com/cosmtrek/air@latest` to install [air](https://github.com/cosmtrek/air) (Go dev. server)
-- Run `go mody tidy`
+- Run `go mod tidy`
 - Run `air` to spin up development server
   - Note: if this doesn't work, there are 2 options:
    - Look up error on Stack Overflow to try to fix so that dev server can run
