@@ -6,6 +6,8 @@ import os
 from dotenv import load_dotenv
 
 # test to see if this deploys to aws still with folder name change
+# plesee woerk
+j = 0
 
 # for dependencies: https://docs.aws.amazon.com/lambda/latest/dg/python-package.html
 # user: id, timestamp, email, prefs
