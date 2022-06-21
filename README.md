@@ -13,8 +13,8 @@
    - Just run `go run main.go`, which will execute and run our Go server, but doesn't have hot reload. If you're not working on the API, this should be sufficient since hot reload won't be very important
 
 ### Frontend `/tokyo'
-- Run `npm install` to install dependencies
 - Navigate to `tokyo` directory: `cd tokyo`
+- Run `npm install` to install dependencies
 - Get the following extensions:
  - TailwindCSS Intellisense 
  - PostCSS Language Support
