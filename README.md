@@ -16,7 +16,7 @@
 - Navigate to `tokyo` directory: `cd tokyo`
 - Run `npm install` to install dependencies
 - Get the following extensions:
- - TailwindCSS Intellisense 
- - PostCSS Language Support
- - (TypeScript support too maybe?)
+  - TailwindCSS Intellisense 
+  - PostCSS Language Support
+  - (TypeScript support too maybe?)
 - Run `npm run dev` to boot dev server
