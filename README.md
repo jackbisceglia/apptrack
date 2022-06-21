@@ -17,6 +17,7 @@
   - Note: if this doesn't work, there are 2 options:
    - Look up error on Stack Overflow to try to fix so that dev server can run
    - Just run `go run main.go`, which will execute and run our Go server, but doesn't have hot reload. If you're not working on the API, this should be sufficient since hot reload won't be very important
+- Server should be running at https://localhost:8080/
 
 ### Frontend `./tokyo`
 - Navigate to `tokyo` directory: `cd tokyo`
@@ -26,6 +27,7 @@
   - PostCSS Language Support
   - (TypeScript support too maybe?)
 - Run `npm run dev` to boot dev server
+- App should be running at https://localhost:3000
 
 ### DB Scripts `./istanbul`
 - Navigate to `/istanbul` `cd istanbul`
