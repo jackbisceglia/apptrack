@@ -22,9 +22,9 @@ jobs:
         role-session-name: MySessionName
     - name: zip Lambda Function
       run: |
-        cd lambda
+        cd montreal
         zip -g my-deployment-package.zip lambda_function.py
     - name: AWS Deploy
       run: |
-        cd lambda
+        cd montreal
         aws lambda update-function-code --function-name email_new_pittcsc_postings --zip-file fileb://my-deployment-package.zip
