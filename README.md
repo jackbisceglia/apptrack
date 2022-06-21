@@ -12,7 +12,7 @@
    - Look up error on Stack Overflow to try to fix so that dev server can run
    - Just run `go run main.go`, which will execute and run our Go server, but doesn't have hot reload. If you're not working on the API, this should be sufficient since hot reload won't be very important
 
-### Frontend `/tokyo`
+### Frontend `./tokyo`
 - Navigate to `tokyo` directory: `cd tokyo`
 - Run `npm install` to install dependencies
 - Get the following extensions:
@@ -21,7 +21,7 @@
   - (TypeScript support too maybe?)
 - Run `npm run dev` to boot dev server
 
-### DB Scripts `/istanbul`
+### DB Scripts `./istanbul`
 - Navigate to `/istanbul` `cd istanbul`
 - Copy `.env` file from `/sf` and paste into `/istanbul`
 - Run `npm install`
