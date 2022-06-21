@@ -20,3 +20,9 @@
   - PostCSS Language Support
   - (TypeScript support too maybe?)
 - Run `npm run dev` to boot dev server
+
+### DB Scripts `/istanbul`
+- Navigate to `/istanbul` `cd istanbul`
+- Copy `.env` file from `/sf` and paste into `/istanbul`
+- Run `npm install`
+- Run `node main.js -h` to see the query options
