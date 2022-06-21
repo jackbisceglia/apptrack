@@ -22,9 +22,20 @@ def lambda_handler(event=None, context=None):
     new_intern_postings = get_new_postings(intern_db_postings, intern_web_postings)
     new_new_grad_postings = get_new_postings(new_grad_db_postings, new_grad_web_postings)
     
+    new_intern_postings_exist = new_intern_postings is not None and len(new_intern_postings) != 0
+    new_new_grad_postings_exist = new_new_grad_postings is not None and len(new_new_grad_postings) != 0
+    
+    if new_intern_postings_exist and new_new_grad_postings_exist:
+        all_recipients = get_all_recipients_from_db()
+        intern_recipients = filter_recipients(all_recipients, is_intern=True)
+        new_grad_recipients = filter_recipients(all_recipients, is_intern=False)
+    elif new_intern_postings_exist:
+        intern_recipients = get_recipients_from_db_by_is_intern(is_intern=True)
+    else:
+        new_grad_recipients = get_recipients_from_db_by_is_intern(is_intern=False)
+
     # send out new intern postings if there are any
-    if len(new_intern_postings) != 0:
-        intern_recipients = get_recipients_from_db(is_intern=True)
+    if new_intern_postings_exist:
         intern_table = postings_to_table(new_intern_postings)
         send_mail(intern_recipients, intern_table)
         update_db_postings(new_intern_postings, is_intern=False)
@@ -32,8 +43,7 @@ def lambda_handler(event=None, context=None):
         print('No new intern postings!')
         
     # send out new intern postings if there are any
-    if len(new_new_grad_postings) != 0:
-        new_grad_recipients = get_recipients_from_db(is_intern=False)
+    if new_new_grad_postings_exist:
         new_grad_table = postings_to_table(new_new_grad_postings)
         send_mail(new_grad_recipients, new_grad_table)
         update_db_postings(new_new_grad_postings, is_intern=False)
@@ -45,17 +55,36 @@ def lambda_handler(event=None, context=None):
         'body': json.dumps('Postings sent!')
     }
     
-def get_recipients_from_db(is_intern):
+def get_all_recipients_from_db():
+    GET_URL = 'http://localhost:8080/users/'
+    
+    response = requests.get(GET_URL)
+    if not response.ok:
+        target_group = 'intern' if is_intern else 'new grad'
+        print('Error fetching', target_group, 'recipients:', response.status_code)
+        
+    data = response.json()
+    print(data)
+    return data
+    
+def get_recipients_from_db_by_is_intern(is_intern):
     GET_URL = 'http://localhost:8080/users/INTERN' if is_intern else 'http://localhost:8080/users/NEWGRAD'
 
     response = requests.get(GET_URL)
     if not response.ok:
         target_group = 'intern' if is_intern else 'new grad'
         print('Error fetching', target_group, 'recipients:', response.status_code)
-    
+        
     data = response.json()
     print(data)
     return data
+
+def filter_recipients(recipients, is_intern):
+    result = []
+    for recipient in recipients:
+        if recipient['isIntern'] == is_intern:
+            result.append(recipient)
+    return result
 
 def get_postings_from_db(is_intern):
     GET_URL = 'http://localhost:8080/postings/'
@@ -130,7 +159,7 @@ def postings_to_table(postings):
     table = '<table><thead><tr><th>Name</th><th>Location</th><th>Notes</th></tr></thead><tbody>'
     for posting in postings:
         row = '<tr>'
-        row += '<td><a href='+posting['url']+' rel="nofollow">'+posting['name']+'</a></td>'
+        row += '<td><a href='+posting['url']+' rel="nofollow">'+posting['company']+'</a></td>'
         row += '<td>'+posting['location']+'</td>'
         row += '<td>'+posting['notes']+'</td>'
         row += '</tr>'
@@ -143,6 +172,10 @@ def send_mail(recipients, table_str):
     FROM_EMAIL = 'nabilb@mit.edu'
     load_dotenv()
     mailjet = Client(auth=(os.getenv("MAILJET_API_KEY"), os.getenv("MAILJET_API_SECRET_KEY")), version='v3.1')
+    
+    if recipients is None:
+        print('no recipients')
+        return
     
     # send data
     for recipient in recipients:
@@ -171,3 +204,4 @@ def send_mail(recipients, table_str):
         print(result.json())
         if int(result.status_code) != 200:
             errors.append((result.status_code, recipient['email']))
+lambda_handler()
