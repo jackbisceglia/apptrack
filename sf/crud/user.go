@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 )
 
 type User struct {
@@ -55,8 +56,10 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool) {
 
 		if len(listPreferences) > 1 {
 			preferenceString = "BOTH"
+		} else if (listPreferences[0] == "newgrad" || listPreferences[0] == "intern") {
+			preferenceString = strings.ToUpper(listPreferences[0])
 		} else {
-			preferenceString = listPreferences[0]
+			return false
 		}
 
 		SQL_STATEMENT := `

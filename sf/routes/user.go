@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/jackbisceglia/internship-tracker/crud"
 
@@ -26,7 +27,8 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 
 	// GET BY LIST TYPE
 	router.HandleFunc("/{listType}", func(w http.ResponseWriter, r *http.Request) {
-		listType := mux.Vars(r)["listType"]
+		listType := strings.ToUpper(mux.Vars(r)["listType"])
+
 		
 		users := GetUsersByList(listType)
 
