@@ -37,6 +37,7 @@
 
 ### Lambda `./montreal`
 - `lambda_handler` is the entry point for the lambda (event and context don't matter for our purposes)
+- Copy the .env file into the montreal directory from slack
 - To test
   - run `cd montreal` to enter the directory
   - add `lambda_handler()` to the bottom of the file
