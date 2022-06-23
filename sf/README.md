@@ -7,7 +7,7 @@
 
 ## `/users`
 
-- `POST` `"/{list: 'INTERN' | 'NEWGRAD'}"` -> Add new user to database
-- `GET` `"/{list: 'INTERN' | 'NEWGRAD'}"` -> Read all users according to list parameter
+- `POST` `"/{list: 'intern' | 'newgrad'}"` -> Add new user to database
+- `GET` `"/{list: 'intern' | 'newgrad'}"` -> Read all users according to list parameter
 - `PUT` `"/"` -> Update subscription preferences
 - `DELETE` `"/"` -> Delete user from DB
