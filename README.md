@@ -35,7 +35,7 @@
   - When the code is pushed and auto-deployed, the zip file will be used by AWS
 - When pushed to main, our github action will take care of auto deploying the new code to AWS
   - It has its own credentials and everything, so there should be no need to visit AWS
-  - If you need to check something on AWS or have questions about the lamnbda, contact me (Nabil)
+  - If you need to check something on AWS or have questions about the lambda, contact me (Nabil)
     - slack: @nabil
     - email: nabilbaugher@gmail.com
 
