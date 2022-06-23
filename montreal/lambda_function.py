@@ -204,4 +204,3 @@ def send_mail(recipients, table_str):
         print(result.json())
         if int(result.status_code) != 200:
             errors.append((result.status_code, recipient['email']))
-lambda_handler()
