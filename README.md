@@ -19,6 +19,26 @@
    - Just run `go run main.go`, which will execute and run our Go server, but doesn't have hot reload. If you're not working on the API, this should be sufficient since hot reload won't be very important
 - Server should be running at https://localhost:8080/
 
+### Lambda `./montreal`
+- `lambda_handler` is the entry point for the lambda (event and context don't matter for our purposes)
+- To test
+  - run `cd montreal` to enter the directory
+  - add `lambda_handler()` to the bottom of the file
+  - run `python3 lambda_function.py`
+- To add dependencies
+  - run `cd montreal` to enter the directory
+  - run `pip install <dependency>`
+    - ex. `pip install requests`
+  - run `pip install --target ./package <dependency>`
+  - run `cd package`
+  - run `zip -r ../my-deployment-package.zip .`
+  - When the code is pushed and auto-deployed, the zip file will be used by AWS
+- When pushed to main, our github action will take care of auto deploying the new code to AWS
+  - It has its own credentials and everything, so there should be no need to visit AWS
+  - If you need to check something on AWS or have questions about the lamnbda, contact me (Nabil)
+    - slack: @nabil
+    - email: nabilbaugher@gmail.com
+
 ### Frontend `./tokyo`
 - Navigate to `tokyo` directory: `cd tokyo`
 - Run `npm install` to install dependencies
