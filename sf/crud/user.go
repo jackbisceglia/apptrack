@@ -8,10 +8,10 @@ import (
 )
 
 type User struct {
-	Id string
-	CreatedAt string
-	EmailAddress string
-	PreferenceList string
+	Id string `json:"id"`
+	CreatedAt string `json:"createdAt"`
+	EmailAddress string `json:"emailAddress"`
+	PreferenceList string `json:"preferenceList"`
 }
 
 func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool) {
