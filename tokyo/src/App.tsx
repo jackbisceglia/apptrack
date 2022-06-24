@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import Signup from "./routes/Signup";
-import Listings from "./routes/Listings";
+import Postings from "./routes/Postings";
 import Unsubscribe from "./routes/Unsubscribe";
 import NotFound from "./routes/NotFound";
 
@@ -13,7 +13,7 @@ export default function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Signup />} />
-        <Route path="/listings" element={<Listings />} />
+        <Route path="/postings" element={<Postings />} />
         <Route path="/unsubscribe" element={<Unsubscribe />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

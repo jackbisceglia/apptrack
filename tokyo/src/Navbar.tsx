@@ -15,11 +15,11 @@ export default function Navbar() {
             </span>
           </NavLink>
           <NavLink
-            to="/listings"
+            to="/postings"
             className={({ isActive }) => (isActive ? "text-red-500" : "")}
           >
             <span className="flex rounded-md px-2 pb-2 transition-[padding] duration-150 ease-out hover:bg-red-500 hover:pt-2 hover:text-stone-50">
-              LISTINGS
+              POSTINGS
             </span>
           </NavLink>
         </nav>
