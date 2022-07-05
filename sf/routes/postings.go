@@ -19,7 +19,8 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 	GetPostings, InsertPosting := crud.PostingsCrud(db)
 
 	// Get all postings from database
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("get hit")
 		postings := GetPostings()
 		internList := make([]crud.PostingData, 0)
 		newGradList := make([]crud.PostingData, 0)
@@ -32,23 +33,26 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 			}
 		}
 
-		w.Header().Set("Content-Type", "application/json")
 		res, err := json.Marshal(PostResponse{internList, newGradList})
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(res)
 	}).Methods("GET")
 	
 	// POST posting(s) into database
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("post hit")
+
 		var postingData []crud.PostingData
 
 		err := json.NewDecoder(r.Body).Decode(&postingData)
 		if err != nil {
-			fmt.Printf("error here")
+			fmt.Printf("error here\n")
+			fmt.Printf("%v\n", postingData)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

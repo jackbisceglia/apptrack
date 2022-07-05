@@ -31,7 +31,6 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 
 		
 		users := GetUsersByList(listType)
-
 		w.Header().Set("Content-Type", "application/json")
 		res, err := json.Marshal(users)
 		if err != nil {
@@ -44,23 +43,20 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 	}).Methods("GET")
 
 	// POST USER INTO DB
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
 		// Gather info from incoming request
 		var signUpData SignUpData
 
 		// Check for errors, and decode JSON into variable typed as struct
 		err := json.NewDecoder(r.Body).Decode(&signUpData)
 		if err != nil {
-			fmt.Printf("error here")
+			fmt.Printf("%v\n%v\n", err, signUpData)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		// Insert user into database
 		success := InsertUser(signUpData.EmailAddress, signUpData.ListPreferences)
-
-		// Set Response Type on Header
-		w.Header().Set("Content-Type", "application/json")
 
 		res, err := json.Marshal(Response{Success: success})
 
