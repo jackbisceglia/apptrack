@@ -48,6 +48,7 @@ func apiEntry() {
 	}
 	v := loadEnvVars()
 	var PORT string = os.Getenv("PORT")
+	fmt.Prinf("%s", PORT)
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+"password=%s dbname=%s sslmode=disable", v.db_host, v.db_port, v.db_username, v.db_password, v.db_name)
 
