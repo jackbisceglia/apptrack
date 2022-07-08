@@ -41,6 +41,17 @@ func loadEnvVars() DBAuth {
 
 }
 
+func getPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = ":8080"
+	} else {
+		port = ":" + port
+	}
+
+	return port
+}
+
 // Entry of API
 func apiEntry() {
 	envErr := godotenv.Load()
@@ -48,8 +59,6 @@ func apiEntry() {
 		log.Fatalf("Error loading .env file")
 	}
 	v := loadEnvVars()
-	var PORT string = "0.0.0.0:" + os.Getenv("PORT")
-
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+"password=%s dbname=%s sslmode=disable", v.db_host, v.db_port, v.db_username, v.db_password, v.db_name)
 
@@ -57,6 +66,8 @@ func apiEntry() {
 	if err != nil {
 		panic(err)
 	}
+
+	var PORT string = getPort()
 
 	// Declare Router and SubRouters
 	router := mux.NewRouter()
