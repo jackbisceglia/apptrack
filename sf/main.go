@@ -15,7 +15,6 @@ import (
 	"github.com/rs/cors"
 )
 
-var PORT string = ":8080"
 
 type DBAuth struct {
 	db_host string 
@@ -49,6 +48,8 @@ func apiEntry() {
 		log.Fatalf("Error loading .env file")
 	}
 	v := loadEnvVars()
+	var PORT string = ":" + os.Getenv("PORT")
+
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+"password=%s dbname=%s sslmode=disable", v.db_host, v.db_port, v.db_username, v.db_password, v.db_name)
 
