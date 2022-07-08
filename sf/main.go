@@ -48,7 +48,7 @@ func apiEntry() {
 		log.Fatalf("Error loading .env file")
 	}
 	v := loadEnvVars()
-	var PORT string = ":" + os.Getenv("PORT")
+	var PORT string = "0.0.0.0:" + os.Getenv("PORT")
 
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+"password=%s dbname=%s sslmode=disable", v.db_host, v.db_port, v.db_username, v.db_password, v.db_name)
@@ -67,7 +67,7 @@ func apiEntry() {
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		io.WriteString(w, "Hello World")
+		io.WriteString(w, "Hello Wooorld")
 	})
 
 	// Invoke Route Listeners, passing in DB Instance and SubRotuers
