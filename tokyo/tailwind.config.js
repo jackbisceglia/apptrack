@@ -4,12 +4,12 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sen: "sen",
+        sen: "sen, sans-serif",
       },
       fontSize: {
-        header: 'var(--step-0)'
-      }
+        header: "var(--step-0)",
+      },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/line-clamp")],
 };

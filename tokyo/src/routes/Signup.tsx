@@ -1,4 +1,4 @@
-import React, { FormEventHandler, useState } from "react";
+import { useState } from "react";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -32,6 +32,7 @@ export default function Signup() {
     if (checked[1]) listPreferences.push("newgrad");
 
     try {
+      setStatus("Loading...");
       const response = await fetch("http://localhost:8080/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,29 +42,15 @@ export default function Signup() {
         }),
       });
       const data = await response.json();
-      console.log(data);
+      if (data.Success) {
+        setEmail("");
+        setChecked([false, false]);
+        setStatus("Success! Your all set.");
+      }
     } catch (error) {
       setStatus("Something went wrong. Try again later.");
       return;
     }
-
-    setEmail("");
-    setChecked([false, false]);
-    setStatus("Success! Your all set.");
-  }
-
-  // FOR TESTING ONLY
-  async function testPost() {
-    const response = await fetch("http://localhost:8080/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        emailAddress: "foo@gmail.com",
-        listPreferences: ["intern", "newgrad"],
-      }),
-    });
-    const data = await response.json();
-    console.log(data);
   }
 
   return (
@@ -125,12 +112,6 @@ export default function Signup() {
             {status}
           </p>
         )}
-        <button
-          className="grow rounded-md bg-red-500 p-2 text-lg text-stone-50 hover:bg-red-600 active:bg-red-600"
-          onClick={testPost}
-        >
-          TEST BUTTON FOR JACK
-        </button>
       </div>
     </div>
   );
