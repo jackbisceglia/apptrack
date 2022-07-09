@@ -18,9 +18,7 @@ type PostResponse struct {
 func PostingRoutes(router *mux.Router, db *sql.DB) {
 	GetPostings, InsertPosting := crud.PostingsCrud(db)
 
-	// Get all postings from database
-	router.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("get hit")
+	getPostingsHandler := func(w http.ResponseWriter, r *http.Request) {
 		postings := GetPostings()
 		internList := make([]crud.PostingData, 0)
 		newGradList := make([]crud.PostingData, 0)
@@ -41,12 +39,9 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(res)
-	}).Methods("GET")
-	
-	// POST posting(s) into database
-	router.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("post hit")
+	}
 
+	postPostingsHandler := func(w http.ResponseWriter, r *http.Request) {
 		var postingData []crud.PostingData
 
 		err := json.NewDecoder(r.Body).Decode(&postingData)
@@ -76,5 +71,8 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 	
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(res)
-	}).Methods("POST")
+	}
+
+	router.HandleFunc("/", getPostingsHandler).Methods("GET")
+	router.HandleFunc("/", postPostingsHandler).Methods("POST")
 }
