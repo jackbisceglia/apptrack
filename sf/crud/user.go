@@ -22,11 +22,10 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool) {
 			SELECT * FROM users
 		`
 
-		if preferenceList != "BOTH" {
+		if preferenceList != "" {
 			SQL_STATEMENT = fmt.Sprintf("%s WHERE preferenceList = $1 or preferenceList = $2", SQL_STATEMENT)
 			db_values = append(db_values, "BOTH", preferenceList)
 		}
-
 
 		rows, err := db.Query(SQL_STATEMENT, db_values...)
 		if err != nil {
