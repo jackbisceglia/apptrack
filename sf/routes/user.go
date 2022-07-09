@@ -25,10 +25,8 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 	// Pass db instance to UserCrud to get back User Crud Functions
 	GetUsersByList, InsertUser := crud.UserCrud(db)
 
-	// GET BY LIST TYPE
-	router.HandleFunc("/{listType}", func(w http.ResponseWriter, r *http.Request) {
+	getUsersHandler := func(w http.ResponseWriter, r *http.Request) {
 		listType := strings.ToUpper(mux.Vars(r)["listType"])
-
 		
 		users := GetUsersByList(listType)
 		w.Header().Set("Content-Type", "application/json")
@@ -40,10 +38,9 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 		w.WriteHeader(http.StatusOK)
 		w.Write(res)
 
-	}).Methods("GET")
+	}
 
-	// POST USER INTO DB
-	router.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
+	postUserHandler := func (w http.ResponseWriter, r *http.Request) {
 		// Gather info from incoming request
 		var signUpData SignUpData
 
@@ -72,6 +69,10 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 	
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(res)
+	}
 
-	}).Methods("POST")
+	// ROUTES
+	router.HandleFunc("/", getUsersHandler).Methods("GET")
+	router.HandleFunc("/{listType}", getUsersHandler).Methods("GET")
+	router.HandleFunc("/", postUserHandler).Methods("POST")
 }

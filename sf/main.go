@@ -27,7 +27,7 @@ type DBAuth struct {
 
 // Return instance of SubRouter using passed in subroute
 func makeSubRouter(subPath string, parent *mux.Router) *mux.Router {
-	return parent.PathPrefix(fmt.Sprintf("/%s", subPath)).Subrouter()
+	return parent.PathPrefix(fmt.Sprintf("%s", subPath)).Subrouter().StrictSlash(true)
 }
 
 func loadEnvVars() DBAuth {
@@ -72,9 +72,9 @@ func apiEntry() {
 	}
 
 	// Declare Router and SubRouters
-	router := mux.NewRouter()
-	userRouter := makeSubRouter("users", router)
-	postingsRouter := makeSubRouter("postings", router)
+	router := mux.NewRouter().StrictSlash(true)
+	userRouter := makeSubRouter("/users", router)
+	postingsRouter := makeSubRouter("/postings", router)
 	
 	// Root URL Handler
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
