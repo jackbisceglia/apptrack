@@ -54,10 +54,14 @@ func getPort() string {
 
 // Entry of API
 func apiEntry() {
-	envErr := godotenv.Load()
-	if envErr != nil {
-		log.Fatalf("Error loading .env file")
+	if os.Getenv("ENV") != "PROD" {
+		envErr := godotenv.Load()
+
+		if envErr != nil {
+			log.Fatalf("Error loading .env file")
+		}
 	}
+
 	v := loadEnvVars()
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+"password=%s dbname=%s sslmode=disable", v.db_host, v.db_port, v.db_username, v.db_password, v.db_name)
@@ -66,8 +70,6 @@ func apiEntry() {
 	if err != nil {
 		panic(err)
 	}
-
-	var PORT string = getPort()
 
 	// Declare Router and SubRouters
 	router := mux.NewRouter()
@@ -104,7 +106,7 @@ func apiEntry() {
 	})
 
 	// Listen at 8080
-	http.ListenAndServe(PORT, corsOpts.Handler(router))
+	http.ListenAndServe(getPort(), corsOpts.Handler(router))
 	// http.ListenAndServe(PORT, router)
 }
 
