@@ -52,6 +52,7 @@
   - When the code is pushed and auto-deployed, the zip file will be used by AWS
 - When pushed to main, our github action will take care of auto deploying the new code to AWS
   - It has its own credentials and everything, so there should be no need to visit AWS
+  - [This is the guide](https://awstip.com/deploy-code-automatically-to-aws-lambda-using-github-actions-with-aws-cli-commands-2dfc6f1b84c8) I roughly followed to automate the deployment
   - If you need to check something on AWS or have questions about the lambda, contact me
     - slack: @nabil
     - email: nabilbaugher@gmail.com
