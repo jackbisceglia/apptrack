@@ -22,10 +22,15 @@ type SignUpData struct {
 	ListPreferences []string `json:"listPreferences"`
 }
 
+type UnsubscribePayload struct {
+	CreatedAt string `json:"createdAt"`
+	EmailAddress string `json:"emailAddress"`
+}
+
 func UserRoutes(router *mux.Router, db *sql.DB) {
 	// Pass db instance to UserCrud to get back User Crud Functions
 	HandleMultipleUserRoutes := util.RouterUtils(router)
-	GetUsersByList, InsertUser := crud.UserCrud(db)
+	GetUsersByList, InsertUser, DeleteUser := crud.UserCrud(db)
 
 	getUsersHandler := func(w http.ResponseWriter, r *http.Request) {
 		listType := strings.ToUpper(mux.Vars(r)["listType"])
@@ -43,14 +48,12 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 	}
 
 	postUserHandler := func (w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("HIT\n")
 		// Gather info from incoming request
 		var signUpData SignUpData
 
 		// Check for errors, and decode JSON into variable typed as struct
 		err := json.NewDecoder(r.Body).Decode(&signUpData)
 		if err != nil {
-			fmt.Printf("%v\n%v\n", err, signUpData)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -74,8 +77,40 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 		w.Write(res)
 	}
 
+	deleteUserHandler := func(w http.ResponseWriter, r *http.Request) {
+		var unsubscribePayload UnsubscribePayload
+
+		// Check for errors, and decode JSON into variable typed as struct
+		err := json.NewDecoder(r.Body).Decode(&unsubscribePayload)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Insert user into database
+		success := DeleteUser(unsubscribePayload.EmailAddress, unsubscribePayload.CreatedAt)
+		fmt.Printf("\n%t", success)
+
+		res, err := json.Marshal(Response{Success: success})
+
+		if !success {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(res)
+			return
+		}
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(res)
+	}
+
 
 	// ROUTE
 	HandleMultipleUserRoutes([]string{"", "/"}, postUserHandler, "POST")
 	HandleMultipleUserRoutes([]string{"", "/", "/{listType}"}, getUsersHandler, "GET")
+	HandleMultipleUserRoutes([]string{"", "/"}, deleteUserHandler, "DELETE")
 }

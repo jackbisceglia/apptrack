@@ -36,16 +36,18 @@ def lambda_handler(event=None, context=None):
 
     # send out new intern postings if there are any
     if new_intern_postings_exist:
-        intern_table = postings_to_table(new_intern_postings)
-        send_mail(intern_recipients, intern_table)
+        intern_table = build_email_html(new_intern_postings)
+        email_title = build_email_title(new_intern_postings)
+        send_mail(intern_recipients, intern_table, email_title)
         update_db_postings(new_intern_postings, is_intern=False)
     else:
         print('No new intern postings!')
         
     # send out new intern postings if there are any
     if new_new_grad_postings_exist:
-        new_grad_table = postings_to_table(new_new_grad_postings)
-        send_mail(new_grad_recipients, new_grad_table)
+        new_grad_table = build_email_html(new_new_grad_postings)
+        email_title = build_email_title(new_new_grad_postings)
+        send_mail(new_grad_recipients, new_grad_table, email_title)
         update_db_postings(new_new_grad_postings, is_intern=False)
     else:
         print('No new new grad postings!')
@@ -56,19 +58,19 @@ def lambda_handler(event=None, context=None):
     }
     
 def get_all_recipients_from_db():
-    GET_URL = 'http://localhost:8080/users/'
+    GET_URL = 'https://internship-tracker-production.up.railway.app/users/'
     
     response = requests.get(GET_URL)
     if not response.ok:
-        target_group = 'intern' if is_intern else 'new grad'
-        print('Error fetching', target_group, 'recipients:', response.status_code)
+        print('Error fetching all recipients:', response.status_code)
         
     data = response.json()
     print(data)
     return data
     
 def get_recipients_from_db_by_is_intern(is_intern):
-    GET_URL = 'http://localhost:8080/users/INTERN' if is_intern else 'http://localhost:8080/users/NEWGRAD'
+    GET_URL = 'https://internship-tracker-production.up.railway.app/users/'
+    GET_URL += 'intern' if is_intern else 'newgrad'
 
     response = requests.get(GET_URL)
     if not response.ok:
@@ -82,12 +84,16 @@ def get_recipients_from_db_by_is_intern(is_intern):
 def filter_recipients(recipients, is_intern):
     result = []
     for recipient in recipients:
-        if recipient['isIntern'] == is_intern:
+        if recipient['preferenceList'] == 'BOTH':
+            result.append(recipient)
+        elif recipient['preferenceList'] == 'INTERN' and is_intern:
+            result.append(recipient)
+        elif recipient['preferenceList'] == 'NEWGRAD' and not is_intern:
             result.append(recipient)
     return result
 
 def get_postings_from_db(is_intern):
-    GET_URL = 'http://localhost:8080/postings/'
+    GET_URL = 'https://internship-tracker-production.up.railway.app/postings/'
     
     response = requests.get(GET_URL)
     if not response.ok:
@@ -115,7 +121,10 @@ def get_postings_from_web(is_intern):
     for row in rows:
         cols = row.find_all('td')
         cols_text = [ele.text.strip() for ele in cols]
-        url = cols[0].find('a')['href']
+        try:
+            url = cols[0].find('a')['href']
+        except: # no url --> posting closed
+            continue
         cols_text.insert(1, url)
         data.append(cols_text)
     
@@ -131,11 +140,10 @@ def get_postings_from_web(is_intern):
             'isIntern': is_intern,
         }
         result.append(json_posting)
-        
+
     return result
 
 def get_new_postings(db_postings_data, web_postings_data):
-    # print(type(db_postings), db_postings)
     # key: email, value: json posting
     db_map = {posting['url'] : posting for posting in db_postings_data}
     web_map = {posting['url'] : posting for posting in web_postings_data}
@@ -149,13 +157,13 @@ def get_new_postings(db_postings_data, web_postings_data):
     return result
 
 def update_db_postings(new_postings, is_intern):
-    POST_URL = 'http://localhost:8080/postings/'
+    POST_URL = 'https://internship-tracker-production.up.railway.app/postings/'
     response = requests.post(POST_URL, json=new_postings)
     print('Attempting to update database with new '+ ('intern ' if is_intern else 'new grad ') +'postings...')
     print(response)
 
     
-def postings_to_table(postings):
+def build_email_html(postings):
     table = '<table><thead><tr><th>Name</th><th>Location</th><th>Notes</th></tr></thead><tbody>'
     for posting in postings:
         row = '<tr>'
@@ -167,7 +175,20 @@ def postings_to_table(postings):
     table += '</tbody></table>'
     return table
 
-def send_mail(recipients, table_str):
+def build_email_title(postings):
+    if len(postings) == 1:
+        return 'New job posting from ' + postings[0]['company'] + '!'
+    
+    company_names = [posting['company'] for posting in postings]
+    if len(postings) == 2:
+        company_names_str = company_names[0] + ' and ' + company_names[1]
+    elif len(postings) == 3:
+        company_names_str = ', '.join(company_names[:-1]) + ', and ' + company_names[-1]
+    else:
+        company_names_str = ', '.join(company_names[:3]) + ', and more'
+    return 'New job postings from ' + company_names_str + '!'
+
+def send_mail(recipients, email_html, email_title):
     # setup
     FROM_EMAIL = 'nabilb@mit.edu'
     load_dotenv()
@@ -179,28 +200,29 @@ def send_mail(recipients, table_str):
     
     # send data
     for recipient in recipients:
+        email_html += '<p><a href="https://intern-tracker.netlify.app/unsubscribe/'+recipient['createdAt']+'">unsubscribe</a></p>'
         errors = [] 
         data = {
             'Messages': [
                 {
                     "From": {
-                        "Email": "nabilb@mit.edu",
+                        "Email": FROM_EMAIL,
                         "Name": "Internship Tracker"
                     },
                     "To": [
                         {
-                            "Email": recipient['EmailAddress'],
+                            "Email": recipient['emailAddress'],
                         }
                     ],
-                    "Subject": "PittCSC Summer 2023 Internship Postings!",
+                    "Subject": email_title,
                     "TextPart": "Table with postings.",
-                    "HTMLPart": table_str,
+                    "HTMLPart": email_html,
                     "CustomID": "pittcscScraper"
                 }
             ]
         }
         result = mailjet.send.create(data=data)
-        print(result.status_code)
+        print('email message status:', result.status_code)
         print(result.json())
         if int(result.status_code) != 200:
             errors.append((result.status_code, recipient['email']))
