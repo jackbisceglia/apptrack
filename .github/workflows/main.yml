@@ -26,3 +26,32 @@ jobs:
       run: |
         cd montreal
         aws lambda update-function-code --function-name email_new_pittcsc_postings --zip-file fileb://my-deployment-package.zip
+
+name: Deploy Get Pay Lambda
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Deploy Get Pay Lambda
+    runs-on: [ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        role-duration-seconds: 1200
+        role-session-name: MySessionName
+    - name: zip Lambda Function
+      run: |
+        cd florence
+        zip -g my-deployment-package.zip lambda_function.py
+    - name: AWS Deploy
+      run: |
+        cd florence
+        aws lambda update-function-code --function-name get_pay --zip-file fileb://my-deployment-package.zip
