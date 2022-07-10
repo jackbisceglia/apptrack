@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jackbisceglia/internship-tracker/crud"
+	"github.com/jackbisceglia/internship-tracker/util"
 )
 
 type PostResponse struct {
@@ -16,6 +17,7 @@ type PostResponse struct {
 }
 
 func PostingRoutes(router *mux.Router, db *sql.DB) {
+	HandleMultiplePostingRoutes := util.RouterUtils(router)
 	GetPostings, InsertPosting := crud.PostingsCrud(db)
 
 	getPostingsHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -73,6 +75,6 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 		w.Write(res)
 	}
 
-	router.HandleFunc("/", getPostingsHandler).Methods("GET")
-	router.HandleFunc("/", postPostingsHandler).Methods("POST")
+	HandleMultiplePostingRoutes([]string{"", "/"}, getPostingsHandler, "GET")
+	HandleMultiplePostingRoutes([]string{"", "/"}, postPostingsHandler, "POST")
 }
