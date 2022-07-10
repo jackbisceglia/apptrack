@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/jackbisceglia/internship-tracker/crud"
+	"github.com/jackbisceglia/internship-tracker/util"
 
 	"github.com/gorilla/mux"
 )
@@ -23,6 +24,7 @@ type SignUpData struct {
 
 func UserRoutes(router *mux.Router, db *sql.DB) {
 	// Pass db instance to UserCrud to get back User Crud Functions
+	HandleMultipleUserRoutes := util.RouterUtils(router)
 	GetUsersByList, InsertUser := crud.UserCrud(db)
 
 	getUsersHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +43,7 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 	}
 
 	postUserHandler := func (w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("HIT\n")
 		// Gather info from incoming request
 		var signUpData SignUpData
 
@@ -71,8 +74,8 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 		w.Write(res)
 	}
 
-	// ROUTES
-	router.HandleFunc("/", getUsersHandler).Methods("GET")
-	router.HandleFunc("/{listType}", getUsersHandler).Methods("GET")
-	router.HandleFunc("/", postUserHandler).Methods("POST")
+
+	// ROUTE
+	HandleMultipleUserRoutes([]string{"", "/"}, postUserHandler, "POST")
+	HandleMultipleUserRoutes([]string{"", "/", "/{listType}"}, getUsersHandler, "GET")
 }
