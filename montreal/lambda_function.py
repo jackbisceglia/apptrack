@@ -43,7 +43,7 @@ def lambda_handler(event=None, context=None):
     else:
         print('No new intern postings!')
         
-    # send out new intern postings if there are any
+    # send out new new grad postings if there are any
     if new_new_grad_postings_exist:
         new_grad_table = build_email_html(new_new_grad_postings)
         email_title = build_email_title(new_new_grad_postings)
@@ -200,7 +200,7 @@ def send_mail(recipients, email_html, email_title):
     
     # send data
     for recipient in recipients:
-        email_html += '<p><a href="https://intern-tracker.netlify.app/unsubscribe/'+recipient['createdAt']+'">unsubscribe</a></p>'
+        email_html += '<p><a href="https://intern-tracker.netlify.app/unsubscribe/'+recipient['id']+'">unsubscribe</a></p>'
         errors = [] 
         data = {
             'Messages': [

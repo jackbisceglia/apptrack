@@ -46,7 +46,7 @@ export default function Signup() {
       if (data.Success) {
         setEmail("");
         setChecked([false, false]);
-        setStatus("Success! Your all set.");
+        setStatus("Success! You're all set.");
       }
     } catch (error) {
       setStatus("Something went wrong. Try again later.");
@@ -61,8 +61,8 @@ export default function Signup() {
           The Easiest Way To Stay Ahead 🚀
         </h2>
         <p className="mb-4 text-lg">
-          Receive updates on the latest 2023 summer internship and new grad job
-          postings. Delivered once daily if there is anything new.
+          Receive daily updates on the latest 2023 summer internship and new grad job
+          postings.
         </p>
         <form onSubmit={handleSubmit}>
           <input
@@ -105,7 +105,7 @@ export default function Signup() {
         {status && (
           <p
             className={
-              status === "Success! Your all set."
+              status === "Success! You're all set."
                 ? "mt-4 text-lg font-bold text-green-700"
                 : "mt-4 text-lg font-bold text-red-500"
             }

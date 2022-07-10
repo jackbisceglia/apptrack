@@ -75,16 +75,16 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool, fun
 		return true
 	}
 
-	ValidateDeletion := func(emailAddress string, createdAt string) bool {
-		var createdAtByEmail string
-		row := db.QueryRow("SELECT createdAt FROM users WHERE emailAddress = $1", emailAddress)
-		err := row.Scan(&createdAtByEmail)
+	ValidateDeletion := func(emailAddress string, userId string) bool {
+		var userIdByEmail string
+		row := db.QueryRow("SELECT id FROM users WHERE emailAddress = $1", emailAddress)
+		err := row.Scan(&userIdByEmail)
 
-		return err == nil && err != sql.ErrNoRows && createdAt == createdAtByEmail
+		return err == nil && err != sql.ErrNoRows && userId == userIdByEmail
 	}
 
-	DeleteUser := func(emailAddress string, createdAt string) bool {
-		if !ValidateDeletion(emailAddress, createdAt) {
+	DeleteUser := func(emailAddress string, userId string) bool {
+		if !ValidateDeletion(emailAddress, userId) {
 			return false
 		}
 
