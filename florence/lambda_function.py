@@ -16,7 +16,7 @@ def get_companies_intern_hourly_rate(companies: List[str]):
 
 def get_company_intern_hourly_rate(company: str):
     hardcoded_company = get_hardcoded_company_name(company)
-    parts = [part[0].upper() + part[1:] for part in company.split()]
+    parts = [part.capitalize() for part in company.split()]
     company = hardcoded_company or "-".join(parts)
 
     response = requests.get(f"https://www.levels.fyi/internships/{company}/Software-Engineer-Intern/")
