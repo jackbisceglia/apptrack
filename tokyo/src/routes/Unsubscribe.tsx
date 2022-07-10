@@ -5,7 +5,7 @@ import { API } from "../utils/constants";
 export default function Unsubscribe() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("");
-  const { createdAt } = useParams();
+  const { userId } = useParams();
 
   function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
     setEmail(e.currentTarget.value);
@@ -19,7 +19,7 @@ export default function Unsubscribe() {
       return;
     }
 
-    if (!createdAt) {
+    if (!userId) {
       setStatus("Can't unsubscribe.");
       return;
     }
@@ -31,7 +31,7 @@ export default function Unsubscribe() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           emailAddress: email,
-          createdAt: createdAt,
+          userId: userId,
         }),
       });
       const data = await response.json();

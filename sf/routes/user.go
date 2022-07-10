@@ -3,7 +3,6 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -23,7 +22,7 @@ type SignUpData struct {
 }
 
 type UnsubscribePayload struct {
-	CreatedAt string `json:"createdAt"`
+	UserId string `json:"userId"`
 	EmailAddress string `json:"emailAddress"`
 }
 
@@ -88,8 +87,7 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 		}
 
 		// Insert user into database
-		success := DeleteUser(unsubscribePayload.EmailAddress, unsubscribePayload.CreatedAt)
-		fmt.Printf("\n%t", success)
+		success := DeleteUser(unsubscribePayload.EmailAddress, unsubscribePayload.UserId)
 
 		res, err := json.Marshal(Response{Success: success})
 

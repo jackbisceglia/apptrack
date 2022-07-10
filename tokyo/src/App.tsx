@@ -15,7 +15,7 @@ export default function App() {
         <Route path="/" element={<Signup />} />
         <Route path="/postings" element={<Postings />} />
         <Route path="/unsubscribe/" element={<Unsubscribe />}>
-          <Route path=":createdAt" element={<Unsubscribe />} />
+          <Route path=":userId" element={<Unsubscribe />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
