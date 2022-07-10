@@ -183,7 +183,7 @@ def build_email_title(postings):
     if len(postings) == 2:
         company_names_str = company_names[0] + ' and ' + company_names[1]
     elif len(postings) == 3:
-        company_names_str = ', '.join(company_names[:-1]) + ', and ' + company_names[-1]
+        company_names_str = ', '.join(company_names[:-1]) + ', and ' + company_names[-1] 
     else:
         company_names_str = ', '.join(company_names[:3]) + ', and more'
     return 'New job postings from ' + company_names_str + '!'
@@ -207,7 +207,7 @@ def send_mail(recipients, email_html, email_title):
                 {
                     "From": {
                         "Email": FROM_EMAIL,
-                        "Name": "Internship Tracker"
+                        "Name": "AppTrack"
                     },
                     "To": [
                         {
