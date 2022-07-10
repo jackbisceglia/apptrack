@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-HARDCODED = {"Meta": "Facebook", "Cisco (Meraki)": "Cisco-Meraki", "D. E. Shaw & Co.": "D-E-Shaw"}
+HARDCODED = {"Meta": "Facebook", "Cisco (Meraki)": "Cisco-Meraki", "D. E. Shaw & Co.": "D-E-Shaw", "VMware": "VMware"}
 
 
 def lambda_handler(event=None, context=None):
