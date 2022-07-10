@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API } from "../utils/constants";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -33,7 +34,7 @@ export default function Signup() {
 
     try {
       setStatus("Loading...");
-      const response = await fetch("http://localhost:8080/users", {
+      const response = await fetch(`${API}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
