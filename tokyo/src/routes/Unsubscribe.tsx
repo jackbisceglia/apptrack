@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 
 export default function Unsubscribe() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("");
+  console.log(useParams());
 
   function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
     setEmail(e.currentTarget.value);
