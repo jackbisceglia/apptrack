@@ -32,5 +32,3 @@ def get_hardcoded_company_name(company: str):
     if company in HARDCODED:
         return HARDCODED[company]
     return None
-
-print(get_companies_intern_hourly_rate(["D. E. Shaw & Co."]))
