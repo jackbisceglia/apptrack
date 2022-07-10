@@ -1,4 +1,4 @@
-name: Deploy Lambda Function
+name: Deploy Get Pay Lambda
 on:
   push:
     branches: [main]
@@ -6,7 +6,7 @@ on:
 
 jobs:
   release:
-    name: Deploy lambda function
+    name: Deploy Get Pay Lambda
     runs-on: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
@@ -20,9 +20,9 @@ jobs:
         role-session-name: MySessionName
     - name: zip Lambda Function
       run: |
-        cd montreal
+        cd florence
         zip -g my-deployment-package.zip lambda_function.py
     - name: AWS Deploy
       run: |
-        cd montreal
-        aws lambda update-function-code --function-name email_new_pittcsc_postings --zip-file fileb://my-deployment-package.zip
+        cd florence
+        aws lambda update-function-code --function-name get_pay --zip-file fileb://my-deployment-package.zip
