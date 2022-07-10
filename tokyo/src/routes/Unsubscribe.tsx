@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { API } from "../utils/constants";
 
 export default function Unsubscribe() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("");
-  console.log(useParams());
+  const { userId } = useParams();
 
   function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
     setEmail(e.currentTarget.value);
@@ -18,13 +19,19 @@ export default function Unsubscribe() {
       return;
     }
 
+    if (!userId) {
+      setStatus("Can't unsubscribe.");
+      return;
+    }
+
     try {
       setStatus("Loading...");
-      const response = await fetch("http://localhost:8080/users", {
+      const response = await fetch(`${API}/users`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           emailAddress: email,
+          userId: userId,
         }),
       });
       const data = await response.json();
