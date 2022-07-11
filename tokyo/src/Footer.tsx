@@ -12,14 +12,14 @@ export default function Footer() {
               MISC
             </h2>
             <ul>
-              <li>
+              {/* <li>
                 <Link
                   className="block rounded-md p-1 pl-0 transition-[padding] duration-150 ease-out hover:bg-red-500 hover:pl-2 hover:text-stone-50"
                   to="/unsubscribe"
                 >
                   Unsubscribe
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <a
                   className="block rounded-md p-1 pl-0 transition-[padding] duration-150 ease-out hover:bg-red-500 hover:pl-2 hover:text-stone-50"

@@ -14,6 +14,7 @@ import (
 
 type Response struct {
 	Success bool
+	ServerError string
 }
 
 type SignUpData struct {
@@ -32,11 +33,16 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 	GetUsersByList, InsertUser, DeleteUser := crud.UserCrud(db)
 
 	getUsersHandler := func(w http.ResponseWriter, r *http.Request) {
+		if !util.ValidateUserRequest(mux.Vars(r)["apiKey"]) {
+			w.WriteHeader(http.StatusBadRequest)
+		}
+
 		listType := strings.ToUpper(mux.Vars(r)["listType"])
 		
 		users := GetUsersByList(listType)
 		w.Header().Set("Content-Type", "application/json")
 		res, err := json.Marshal(users)
+
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -89,11 +95,19 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 		// Insert user into database
 		success := DeleteUser(unsubscribePayload.EmailAddress, unsubscribePayload.UserId)
 
-		res, err := json.Marshal(Response{Success: success})
 
 		if !success {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write(res)
+			errMsg := "Failed to authenticate, or email address invalid"
+			
+			res, err := json.Marshal(Response{Success: success, ServerError: errMsg})
+			
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+			} else {
+				w.Write(res)
+			}
+			
 			return
 		}
 
@@ -103,12 +117,18 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 		}
 	
 		w.Header().Set("Content-Type", "application/json")
+		res, err := json.Marshal(Response{Success: success})
+			
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
 		w.Write(res)
 	}
 
 
 	// ROUTE
 	HandleMultipleUserRoutes([]string{"", "/"}, postUserHandler, "POST")
-	HandleMultipleUserRoutes([]string{"", "/", "/{listType}"}, getUsersHandler, "GET")
+	HandleMultipleUserRoutes([]string{"/{apiKey}", "/{apiKey}/{listType}"}, getUsersHandler, "GET")
 	HandleMultipleUserRoutes([]string{"", "/"}, deleteUserHandler, "DELETE")
 }
