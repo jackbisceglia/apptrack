@@ -3,6 +3,7 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -34,7 +35,9 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 
 	getUsersHandler := func(w http.ResponseWriter, r *http.Request) {
 		if !util.ValidateUserRequest(mux.Vars(r)["apiKey"]) {
+			fmt.Printf("API KEY VALIDATION FAILED")
 			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 
 		listType := strings.ToUpper(mux.Vars(r)["listType"])
