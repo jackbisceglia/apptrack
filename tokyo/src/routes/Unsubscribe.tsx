@@ -102,9 +102,9 @@ function UnsubscribeHandler({ userId }: UnsubscribeHandlerProps) {
 
 function AuthFailure() {
   return (
-    <h1 className="text-center text-lg text-red-500">
-      Not authenticated. To unsubscribe, visit our most recently sent email and
-      click the unsubscribe button linked at the bottom of the page. Thanks!
+    <h1 className="mb-4 text-4xl font-bold">
+      To unsubscribe, use the unsubscribe link at the bottom of any email we
+      have sent you. Thanks!
     </h1>
   );
 }
