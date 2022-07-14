@@ -6,29 +6,19 @@ import Message from "./components/Message";
 import Home from "./routes/Home";
 import Unsubscribe from "./routes/Unsubscribe";
 
+import { postingsMsg, unsubscribeMsg, notFoundMsg } from "./utils/constants";
+
+// prettier-ignore
 export default function App() {
   return (
     <div className="font-sen text-stone-800">
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route
-          path="/postings"
-          element={<Message message="Coming Soon! 🚧" />}
-        />
-        <Route
-          path="/unsubscribe"
-          element={
-            <Message message="To unsubscribe, use the unsubscribe link at the bottom of any email we have sent you. Thanks!" />
-          }
-        />
+        <Route path="/postings" element={<Message message={postingsMsg} />} />
+        <Route path="/unsubscribe" element={<Message message={unsubscribeMsg} />} />
         <Route path="/unsubscribe/:userId" element={<Unsubscribe />} />
-        <Route
-          path="*"
-          element={
-            <Message message="The page you are looking for does not exist. Sorry about that." />
-          }
-        />
+        <Route path="*" element={<Message message={notFoundMsg} />} />
       </Routes>
       <Footer />
     </div>
