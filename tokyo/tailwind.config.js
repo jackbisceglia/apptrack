@@ -7,7 +7,7 @@ module.exports = {
         sen: "sen, sans-serif",
       },
       fontSize: {
-        header: "var(--step-0)",
+        header: "clamp(1.88rem, calc(-2.5rem + 21.88vw), 6.25rem)",
       },
     },
   },
