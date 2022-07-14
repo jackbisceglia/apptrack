@@ -14,7 +14,7 @@ type User struct {
 	PreferenceList string `json:"preferenceList"`
 }
 
-func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool) {
+func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool, func(string, string) bool) {
 	GetUsersByList := func(preferenceList string) []User {
 		var user User
 		db_values := []interface{}{}
@@ -75,5 +75,31 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool) {
 		return true
 	}
 
-	return GetUsersByList, InsertUser
+	ValidateDeletion := func(emailAddress string, userId string) bool {
+		var userIdByEmail string
+		row := db.QueryRow("SELECT id FROM users WHERE emailAddress = $1", emailAddress)
+		err := row.Scan(&userIdByEmail)
+
+		return err == nil && err != sql.ErrNoRows && userId == userIdByEmail
+	}
+
+	DeleteUser := func(emailAddress string, userId string) bool {
+		if !ValidateDeletion(emailAddress, userId) {
+			return false
+		}
+
+		SQL_STATEMENT := `
+			DELETE FROM users WHERE emailAddress = $1
+		`
+
+		_, err := db.Exec(SQL_STATEMENT, emailAddress)
+		if err != nil {
+			fmt.Printf("%v", err)
+			return false
+		}
+
+		return true
+	}
+
+	return GetUsersByList, InsertUser, DeleteUser
 }

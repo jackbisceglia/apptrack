@@ -1,39 +1,49 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { API } from "../utils/constants";
+import Status from "../components/Status";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
-  const [checked, setChecked] = useState([false, false]);
-  const [status, setStatus] = useState("");
+  const [checked, setChecked] = useState({ intern: false, newgrad: false });
+  const [status, setStatus] = useState({ message: "", state: "" });
 
   function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
     setEmail(e.currentTarget.value);
   }
 
-  function handleCheckboxChange(position: Number) {
-    const updatedCheckedState: boolean[] = checked.map((curr, index) => {
-      return position === index ? !curr : curr;
+  function handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const currentCheckbox = e.currentTarget.name as keyof typeof checked;
+    setChecked({
+      ...checked,
+      [currentCheckbox]: !checked[currentCheckbox],
     });
-    setChecked(updatedCheckedState);
+  }
+
+  function formValidation() {
+    if (email === "") {
+      setStatus({ message: "Missing Email Address", state: "error" });
+      return false;
+    } else if (!checked.intern && !checked.newgrad) {
+      setStatus({ message: "No Selections Made", state: "error" });
+      return false;
+    }
+
+    return true;
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!formValidation()) return;
 
-    if (email === "") {
-      setStatus("Missing Email Address");
-      return;
-    } else if (checked.every((c) => c === false)) {
-      setStatus("No Selections Made");
-      return;
+    const listPreferences: string[] = [];
+    for (const key of Object.keys(checked)) {
+      if (checked[key as keyof typeof checked]) listPreferences.push(key);
     }
 
-    const listPreferences = [];
-    if (checked[0]) listPreferences.push("intern");
-    if (checked[1]) listPreferences.push("newgrad");
+    console.log(listPreferences);
 
     try {
-      setStatus("Loading...");
+      setStatus({ message: "Loading...", state: "loading" });
       const response = await fetch(`${API}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -45,12 +55,14 @@ export default function Signup() {
       const data = await response.json();
       if (data.Success) {
         setEmail("");
-        setChecked([false, false]);
-        setStatus("Success! Your all set.");
+        setChecked({ intern: false, newgrad: false });
+        setStatus({ message: "Success! You're all set.", state: "success" });
       }
     } catch (error) {
-      setStatus("Something went wrong. Try again later.");
-      return;
+      setStatus({
+        message: "Something went wrong. Try again later.",
+        state: "error",
+      });
     }
   }
 
@@ -61,8 +73,8 @@ export default function Signup() {
           The Easiest Way To Stay Ahead 🚀
         </h2>
         <p className="mb-4 text-lg">
-          Receive updates on the latest 2023 summer internship and new grad job
-          postings. Delivered once daily if there is anything new.
+          Receive daily updates on the latest 2023 summer internship and new
+          grad job postings. No spam. Unsubscribe anytime.
         </p>
         <form onSubmit={handleSubmit}>
           <input
@@ -77,23 +89,25 @@ export default function Signup() {
               <div className="flex">
                 <div className="mr-4 flex items-center">
                   <input
-                    id="internships"
+                    id="intern"
                     type="checkbox"
                     className="mr-2 h-7 w-7 accent-red-500"
-                    checked={checked[0]}
-                    onChange={() => handleCheckboxChange(0)}
+                    checked={checked.intern}
+                    name="intern"
+                    onChange={handleCheckboxChange}
                   />
-                  <label htmlFor="internships">Intern</label>
+                  <label htmlFor="intern">Intern</label>
                 </div>
                 <div className="mr-4 flex items-center">
                   <input
-                    id="newgrads"
+                    id="newgrad"
                     type="checkbox"
                     className="mr-2 h-7 w-7 accent-red-500"
-                    checked={checked[1]}
-                    onChange={() => handleCheckboxChange(1)}
+                    checked={checked.newgrad}
+                    name="newgrad"
+                    onChange={handleCheckboxChange}
                   />
-                  <label htmlFor="newgrads">New Grad</label>
+                  <label htmlFor="newgrad">New Grad</label>
                 </div>
               </div>
               <button className="grow rounded-md bg-red-500 p-2 text-lg text-stone-50 hover:bg-red-600 active:bg-red-600">
@@ -102,17 +116,7 @@ export default function Signup() {
             </div>
           </div>
         </form>
-        {status && (
-          <p
-            className={
-              status === "Success! Your all set."
-                ? "mt-4 text-lg font-bold text-green-700"
-                : "mt-4 text-lg font-bold text-red-500"
-            }
-          >
-            {status}
-          </p>
-        )}
+        <Status message={status.message} state={status.state} />
       </div>
     </div>
   );
