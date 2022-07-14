@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { API } from "../utils/constants";
 import Status from "../components/Status";
 
-export default function Signup() {
+export default function Home() {
   const [email, setEmail] = useState("");
   const [checked, setChecked] = useState({ intern: false, newgrad: false });
   const [status, setStatus] = useState({ message: "", state: "" });
