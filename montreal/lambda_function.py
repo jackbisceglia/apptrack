@@ -1,4 +1,6 @@
 import requests
+import base64
+from Crypto.Cipher import AES
 from bs4 import BeautifulSoup
 from mailjet_rest import Client
 import json
@@ -11,6 +13,10 @@ from dotenv import load_dotenv
 
 USERS_URL = None
 POSTINGS_URL = None
+
+MODE = AES.MODE_CFB
+BLOCK_SIZE = 16
+SEGMENT_SIZE = 128
 
 def make_global_urls():
     global USERS_URL, POSTINGS_URL
@@ -180,10 +186,13 @@ def send_mail(recipients, email_html, email_title):
     if recipients is None:
         print('no recipients')
         return
-    
+
+
     # send data
     for recipient in recipients:
-        unsub_link = '<div class="unsub_link"><a href="https://apptrack.tech/unsubscribe/'+recipient['id']+'">Unsubscribe</a></div></div></body></html>'
+        encryptedpayload = base64.b64encode(encrypt(os.getenv("ENCRYPTION_KEY").encode("utf8"), os.getenv("ENCRYPTION_IV").encode("utf8"), f"{recipient['id']}|{recipient['createdAt']}".encode("utf8")))
+        print(encryptedpayload)
+        unsub_link = '<div class="unsub_link"><a href="https://apptrack.tech/unsubscribe/'+encryptedpayload+'">Unsubscribe</a></div></div></body></html>'
         errors = [] 
         data = {
             'Messages': [
@@ -250,3 +259,16 @@ def build_posting_html(posting):
     result += posting['url']
     result += '">Apply</a></div>'
     return result
+
+def _pad_string(value):
+    length = len(value)
+    pad_size = BLOCK_SIZE - (length % BLOCK_SIZE)
+    return value.ljust(length + pad_size, '\x00')
+
+def encrypt(key, iv, plaintext):
+    aes = AES.new(key, MODE, iv, segment_size=SEGMENT_SIZE)
+    plaintext = _pad_string(plaintext)
+    encrypted_text = aes.encrypt(plaintext)
+    return encrypted_text
+
+lambda_handler()
