@@ -1,49 +1,32 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { API } from "../utils/constants";
-
-type UnsubscribeProps = {
-  authenticated: boolean;
-};
-
-type UnsubscribeHandlerProps = {
-  userId: string;
-};
+import Status from "../components/Status";
 
 export default function Unsubscribe() {
   const { userId } = useParams();
-
-  return (
-    <div className="px-4">
-      <div className="mx-auto max-w-screen-sm">
-        {userId?.length ? (
-          <UnsubscribeHandler userId={userId} />
-        ) : (
-          <AuthFailure />
-        )}
-      </div>
-    </div>
-  );
-}
-
-function UnsubscribeHandler({ userId }: UnsubscribeHandlerProps) {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState({ message: "", state: "" });
 
   function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
     setEmail(e.currentTarget.value);
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
+  function formValidation() {
     if (email === "") {
-      setStatus("Missing Email Address");
-      return;
+      setStatus({ message: "Missing Email Address", state: "error" });
+      return false;
     }
 
+    return true;
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!formValidation()) return;
+
     try {
-      setStatus("Loading...");
+      setStatus({ message: "Loading...", state: "loading" });
       const response = await fetch(`${API}/users`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -53,58 +36,47 @@ function UnsubscribeHandler({ userId }: UnsubscribeHandlerProps) {
         }),
       });
       const data = await response.json();
-      console.log(data);
       if (data.Success) {
         setEmail("");
-        setStatus("Successfully Unsubscribed!");
+        setStatus({ message: "Successfully Unsubscribed!", state: "success" });
       } else {
-        setStatus(`Error Unsubscribing! ${data.ServerError}`);
+        setStatus({
+          message: `Error Unsubscribing! ${data.ServerError}`,
+          state: "error",
+        });
       }
     } catch (error) {
-      setStatus("Something went wrong. Try again later.");
-      return;
+      setStatus({
+        message: "Something went wrong. Try again later.",
+        state: "error",
+      });
     }
   }
 
   return (
-    <>
-      <h2 className="mb-4 text-4xl font-bold">Leaving already? 🤬</h2>
-      <p className="mb-4 text-lg">
-        Enter your email to unsubscribe from all future updates. Feel free to
-        sign up again if you change your mind! We'll be waiting here.
-      </p>
-      <form onSubmit={handleSubmit}>
-        <input
-          className="mb-4 w-full rounded-md bg-stone-300 p-2 text-lg placeholder-stone-500"
-          type="email"
-          placeholder="email address"
-          value={email}
-          onChange={handleEmailChange}
-        />
-        <button className="w-full rounded-md bg-red-500 p-2 text-lg text-stone-50 hover:bg-red-600 active:bg-red-600">
-          Unsubscribe
-        </button>
-      </form>
-      {status && (
-        <p
-          className={
-            status === "Successfully Unsubscribed!"
-              ? "mt-4 text-lg font-bold text-green-700"
-              : "mt-4 text-lg font-bold text-red-500"
-          }
-        >
-          {status}
+    <div className="px-4">
+      <div className="mx-auto max-w-screen-sm">
+        <h2 className="mb-4 text-4xl font-bold">Leaving Already? 🤬</h2>
+        <p className="mb-4 text-lg">
+          Enter your email to unsubscribe from all future updates. Feel free to
+          sign up again if you change your mind! We'll be waiting here.
         </p>
-      )}
-    </>
-  );
-}
-
-function AuthFailure() {
-  return (
-    <h1 className="mb-4 text-4xl font-bold">
-      To unsubscribe, use the unsubscribe link at the bottom of any email we
-      have sent you. Thanks!
-    </h1>
+        <fieldset disabled={status.state === "loading"}>
+          <form onSubmit={handleSubmit}>
+            <input
+              className="mb-4 w-full rounded-md bg-stone-300 p-2 text-lg placeholder-stone-500"
+              type="email"
+              placeholder="email address"
+              value={email}
+              onChange={handleEmailChange}
+            />
+            <button className="w-full rounded-md bg-red-500 p-2 text-lg text-stone-50 hover:bg-red-600 active:bg-red-600">
+              Unsubscribe
+            </button>
+          </form>
+        </fieldset>
+        <Status message={status.message} state={status.state} />
+      </div>
+    </div>
   );
 }

@@ -2,22 +2,23 @@ import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Signup from "./routes/Signup";
-import Postings from "./routes/Postings";
+import Message from "./components/Message";
+import Home from "./routes/Home";
 import Unsubscribe from "./routes/Unsubscribe";
-import NotFound from "./routes/NotFound";
 
+import { postingsMsg, unsubscribeMsg, notFoundMsg } from "./utils/constants";
+
+// prettier-ignore
 export default function App() {
   return (
     <div className="font-sen text-stone-800">
       <Navbar />
       <Routes>
-        <Route path="/" element={<Signup />} />
-        <Route path="/postings" element={<Postings />} />
-        <Route path="/unsubscribe/" element={<Unsubscribe />}>
-          <Route path=":userId" element={<Unsubscribe />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/postings" element={<Message message={postingsMsg} />} />
+        <Route path="/unsubscribe" element={<Message message={unsubscribeMsg} />} />
+        <Route path="/unsubscribe/:userId" element={<Unsubscribe />} />
+        <Route path="*" element={<Message message={notFoundMsg} />} />
       </Routes>
       <Footer />
     </div>
