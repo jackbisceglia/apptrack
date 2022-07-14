@@ -40,8 +40,6 @@ export default function Signup() {
       if (checked[key as keyof typeof checked]) listPreferences.push(key);
     }
 
-    console.log(listPreferences);
-
     try {
       setStatus({ message: "Loading...", state: "loading" });
       const response = await fetch(`${API}/users`, {
@@ -74,48 +72,50 @@ export default function Signup() {
         </h2>
         <p className="mb-4 text-lg">
           Receive daily updates on the latest 2023 summer internship and new
-          grad job postings. No spam. Unsubscribe anytime.
+          grad job postings.
         </p>
-        <form onSubmit={handleSubmit}>
-          <input
-            className="mb-4 w-full rounded-md bg-stone-300 p-2 text-lg placeholder-stone-500"
-            type="email"
-            placeholder="email address"
-            value={email}
-            onChange={handleEmailChange}
-          />
-          <div>
-            <div className="flex items-center">
-              <div className="flex">
-                <div className="mr-4 flex items-center">
-                  <input
-                    id="intern"
-                    type="checkbox"
-                    className="mr-2 h-7 w-7 accent-red-500"
-                    checked={checked.intern}
-                    name="intern"
-                    onChange={handleCheckboxChange}
-                  />
-                  <label htmlFor="intern">Intern</label>
+        <fieldset disabled={status.state === "loading"}>
+          <form onSubmit={handleSubmit}>
+            <input
+              className="mb-4 w-full rounded-md bg-stone-300 p-2 text-lg placeholder-stone-500"
+              type="email"
+              placeholder="email address"
+              value={email}
+              onChange={handleEmailChange}
+            />
+            <div>
+              <div className="flex items-center">
+                <div className="flex">
+                  <div className="mr-4 flex items-center">
+                    <input
+                      id="intern"
+                      type="checkbox"
+                      className="mr-2 h-7 w-7 accent-red-500"
+                      checked={checked.intern}
+                      name="intern"
+                      onChange={handleCheckboxChange}
+                    />
+                    <label htmlFor="intern">Intern</label>
+                  </div>
+                  <div className="mr-4 flex items-center">
+                    <input
+                      id="newgrad"
+                      type="checkbox"
+                      className="mr-2 h-7 w-7 accent-red-500"
+                      checked={checked.newgrad}
+                      name="newgrad"
+                      onChange={handleCheckboxChange}
+                    />
+                    <label htmlFor="newgrad">New Grad</label>
+                  </div>
                 </div>
-                <div className="mr-4 flex items-center">
-                  <input
-                    id="newgrad"
-                    type="checkbox"
-                    className="mr-2 h-7 w-7 accent-red-500"
-                    checked={checked.newgrad}
-                    name="newgrad"
-                    onChange={handleCheckboxChange}
-                  />
-                  <label htmlFor="newgrad">New Grad</label>
-                </div>
+                <button className="grow rounded-md bg-red-500 p-2 text-lg text-stone-50 hover:bg-red-600 active:bg-red-600">
+                  Sign Up
+                </button>
               </div>
-              <button className="grow rounded-md bg-red-500 p-2 text-lg text-stone-50 hover:bg-red-600 active:bg-red-600">
-                Sign Up
-              </button>
             </div>
-          </div>
-        </form>
+          </form>
+        </fieldset>
         <Status message={status.message} state={status.state} />
       </div>
     </div>
