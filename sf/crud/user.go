@@ -61,7 +61,7 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 		} else if (listPreferences[0] == "newgrad" || listPreferences[0] == "intern") {
 			preferenceString = strings.ToUpper(listPreferences[0])
 		} else {
-			return errors.New("invalid preference choice");
+			return errors.New("Invalid preference choice");
 		}
 
 		SQL_STATEMENT := `
@@ -74,7 +74,7 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 			fmt.Println("pq error:", pqErr.Code.Name())
 			errMessage := "Something went wrong"
 			if pqErr.Code.Name() == "unique_violation" {
-				errMessage = "Duplicate email address entered"
+				errMessage = "That email address is already subscribed"
 			}
 
 			return errors.New(errMessage)
@@ -83,17 +83,24 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 		return nil
 	}
 
-	ValidateDeletion := func(emailAddress string, userId string) bool {
+	ValidateDeletion := func(emailAddress string, userId string) string {
 		var userIdByEmail string
 		row := db.QueryRow("SELECT id FROM users WHERE emailAddress = $1", emailAddress)
 		err := row.Scan(&userIdByEmail)
 
-		return err == nil && err != sql.ErrNoRows && userId == userIdByEmail
+		if (err == sql.ErrNoRows) {
+			return "That email address is not subscribed"
+		} else if (userId != userIdByEmail) {
+			return "You do not have permission to unsubscribe that email address"
+		} else {
+			return ""
+		}
 	}
 
 	DeleteUser := func(emailAddress string, userId string) error {
-		if !ValidateDeletion(emailAddress, userId) {
-			return errors.New("Email Address isn't authorized")
+		var error string = ValidateDeletion(emailAddress, userId)
+		if (error != "") {
+			return errors.New(error)
 		}
 
 		SQL_STATEMENT := `
@@ -103,7 +110,7 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 		_, err := db.Exec(SQL_STATEMENT, emailAddress)
 		if err != nil {
 			fmt.Printf("%v", err)
-			return errors.New("Error deleting from database")
+			return errors.New("There was an error unsubscribing")
 		}
 
 		return nil
