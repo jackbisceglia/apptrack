@@ -50,15 +50,23 @@ export default function Home() {
           listPreferences: listPreferences,
         }),
       });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
       const data = await response.json();
+      console.log(data);
       if (data.Success) {
         setEmail("");
         setChecked({ intern: false, newgrad: false });
         setStatus({ message: "Success! You're all set.", state: "success" });
       }
     } catch (error) {
+      let serverErrorMessage = "Something went wrong. Try again later.";
+      if (error instanceof Error) {
+        serverErrorMessage = error.message;
+      }
       setStatus({
-        message: "Something went wrong. Try again later.",
+        message: `${serverErrorMessage.trim()}. Please try again`,
         state: "error",
       });
     }

@@ -2,9 +2,12 @@ package crud
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/lib/pq"
 )
 
 type User struct {
@@ -14,7 +17,7 @@ type User struct {
 	PreferenceList string `json:"preferenceList"`
 }
 
-func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool, func(string, string) bool) {
+func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, func(string, string) bool) {
 	GetUsersByList := func(preferenceList string) []User {
 		var user User
 		db_values := []interface{}{}
@@ -50,7 +53,7 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool, fun
 		return users
 	}
 
-	InsertUser := func(emailAddress string, listPreferences []string) bool {
+	InsertUser := func(emailAddress string, listPreferences []string) error {
 		var preferenceString string
 
 		if len(listPreferences) > 1 {
@@ -58,7 +61,7 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool, fun
 		} else if (listPreferences[0] == "newgrad" || listPreferences[0] == "intern") {
 			preferenceString = strings.ToUpper(listPreferences[0])
 		} else {
-			return false
+			return errors.New("invalid preference choice");
 		}
 
 		SQL_STATEMENT := `
@@ -67,12 +70,17 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) bool, fun
 		`
 
 		_, err := db.Exec(SQL_STATEMENT, emailAddress, preferenceString)
-		if err != nil {
-			fmt.Printf("%v", err)
-			return false
+		if pqErr, ok := err.(*pq.Error); ok {
+			fmt.Println("pq error:", pqErr.Code.Name())
+			errMessage := "Something went wrong"
+			if pqErr.Code.Name() == "unique_violation" {
+				errMessage = "Duplicate email address entered"
+			}
+
+			return errors.New(errMessage)
 		}
 
-		return true
+		return nil
 	}
 
 	ValidateDeletion := func(emailAddress string, userId string) bool {
