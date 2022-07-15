@@ -95,32 +95,16 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 			return
 		}
 
-		// Insert user into database
-		success := DeleteUser(unsubscribePayload.EmailAddress, unsubscribePayload.UserId)
+		// Delete user from database
+		deletionError := DeleteUser(unsubscribePayload.EmailAddress, unsubscribePayload.UserId)
 
-
-		if !success {
-			w.WriteHeader(http.StatusBadRequest)
-			errMsg := "Failed to authenticate, or email address invalid"
-			
-			res, err := json.Marshal(Response{Success: success, ServerError: errMsg})
-			
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-			} else {
-				w.Write(res)
-			}
-			
-			return
-		}
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if deletionError != nil {
+			http.Error(w, deletionError.Error(), http.StatusConflict)
 			return
 		}
 	
 		w.Header().Set("Content-Type", "application/json")
-		res, err := json.Marshal(Response{Success: success})
+		res, err := json.Marshal(Response{Success: deletionError == nil})
 			
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)

@@ -66,7 +66,7 @@ export default function Home() {
         serverErrorMessage = error.message;
       }
       setStatus({
-        message: `${serverErrorMessage.trim()}. Please try again`,
+        message: `${serverErrorMessage.trim()}. Please try again.`,
         state: "error",
       });
     }
