@@ -17,7 +17,6 @@ export default function Unsubscribe() {
       setStatus({ message: "Missing Email Address", state: "error" });
       return false;
     }
-
     return true;
   }
 
@@ -49,7 +48,7 @@ export default function Unsubscribe() {
         });
       }
     } catch (error) {
-      let errorMessage = "Something went wrong. Try again later.";
+      let errorMessage = "Something went wrong";
       if (error instanceof Error) {
         errorMessage = error.message;
       }

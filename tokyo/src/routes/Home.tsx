@@ -54,19 +54,18 @@ export default function Home() {
         throw new Error(await response.text());
       }
       const data = await response.json();
-      console.log(data);
       if (data.Success) {
         setEmail("");
         setChecked({ intern: false, newgrad: false });
         setStatus({ message: "Success! You're all set.", state: "success" });
       }
     } catch (error) {
-      let serverErrorMessage = "Something went wrong. Try again later.";
+      let errorMessage = "Something went wrong";
       if (error instanceof Error) {
-        serverErrorMessage = error.message;
+        errorMessage = error.message;
       }
       setStatus({
-        message: `${serverErrorMessage.trim()}. Please try again.`,
+        message: `${errorMessage.trim()}. Please try again.`,
         state: "error",
       });
     }
