@@ -174,7 +174,7 @@ def update_db_postings(new_postings, is_intern):
 
 def send_mail(recipients, email_html, email_title):
     # setup
-    FROM_EMAIL = 'nabilb@mit.edu'
+    FROM_EMAIL = 'jobs@apptrack.tech'
     mailjet = Client(auth=(os.getenv("MAILJET_API_KEY"), os.getenv("MAILJET_API_SECRET_KEY")), version='v3.1')
     
     if recipients is None:
