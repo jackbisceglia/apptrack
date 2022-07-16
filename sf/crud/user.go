@@ -83,24 +83,24 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 		return nil
 	}
 
-	ValidateDeletion := func(emailAddress string, userId string) string {
+	ValidateDeletion := func(emailAddress string, userId string) error {
 		var userIdByEmail string
 		row := db.QueryRow("SELECT id FROM users WHERE emailAddress = $1", emailAddress)
 		err := row.Scan(&userIdByEmail)
 
 		if (err == sql.ErrNoRows) {
-			return "That email address is not subscribed"
+			return errors.New("That email address is not subscribed")
 		} else if (userId != userIdByEmail) {
-			return "You do not have permission to unsubscribe that email address"
+			return errors.New("You do not have permission to unsubscribe that email address")
 		} else {
-			return ""
+			return nil
 		}
 	}
 
 	DeleteUser := func(emailAddress string, userId string) error {
-		var error string = ValidateDeletion(emailAddress, userId)
-		if (error != "") {
-			return errors.New(error)
+		validationError := ValidateDeletion(emailAddress, userId)
+		if (validationError != nil) {
+			return validationError
 		}
 
 		SQL_STATEMENT := `
