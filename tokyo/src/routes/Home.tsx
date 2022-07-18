@@ -50,6 +50,9 @@ export default function Home() {
           listPreferences: listPreferences,
         }),
       });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
       const data = await response.json();
       if (data.Success) {
         setEmail("");
@@ -57,8 +60,12 @@ export default function Home() {
         setStatus({ message: "Success! You're all set.", state: "success" });
       }
     } catch (error) {
+      let errorMessage = "Something went wrong";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       setStatus({
-        message: "Something went wrong. Try again later.",
+        message: `${errorMessage.trim()}. Please try again.`,
         state: "error",
       });
     }
@@ -72,7 +79,7 @@ export default function Home() {
         </h2>
         <p className="mb-4 text-lg">
           Receive daily updates on the latest 2023 summer internship and new
-          grad job postings.
+          grad job postings. Made possible by the community.
         </p>
         <fieldset disabled={status.state === "loading"}>
           <form onSubmit={handleSubmit}>
