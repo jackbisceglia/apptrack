@@ -3,7 +3,6 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -28,6 +27,10 @@ type UnsubscribePayload struct {
 	EmailAddress string `json:"emailAddress"`
 }
 
+func ResponseMarshal() {
+
+}
+
 func UserRoutes(router *mux.Router, db *sql.DB) {
 	// Pass db instance to UserCrud to get back User Crud Functions
 	HandleMultipleUserRoutes := util.RouterUtils(router)
@@ -35,7 +38,6 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 
 	getUsersHandler := func(w http.ResponseWriter, r *http.Request) {
 		if !util.ValidateUserRequest(mux.Vars(r)["apiKey"]) {
-			fmt.Printf("API KEY VALIDATION FAILED")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -59,25 +61,23 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 		// Gather info from incoming request
 		var signUpData SignUpData
 
-		// Check for errors, and decode JSON into variable typed as struct
-		err := json.NewDecoder(r.Body).Decode(&signUpData)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		// decode incoming JSON into signUpData
+		decodeError := json.NewDecoder(r.Body).Decode(&signUpData)
+		if decodeError != nil {
+			http.Error(w, decodeError.Error(), http.StatusBadRequest)
 			return
 		}
 
 		// Insert user into database
-		success := InsertUser(signUpData.EmailAddress, signUpData.ListPreferences)
-
-		res, err := json.Marshal(Response{Success: success})
-
-		if !success {
-			w.WriteHeader(http.StatusBadRequest)
+		insertionError := InsertUser(signUpData.EmailAddress, signUpData.ListPreferences)
+		if insertionError != nil {
+			http.Error(w, insertionError.Error(), http.StatusConflict)
 			return
 		}
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		res, responseMarshalError := json.Marshal(Response{Success: true})
+		if responseMarshalError != nil {
+			http.Error(w, responseMarshalError.Error(), http.StatusInternalServerError)
 			return
 		}
 	
@@ -95,32 +95,16 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 			return
 		}
 
-		// Insert user into database
-		success := DeleteUser(unsubscribePayload.EmailAddress, unsubscribePayload.UserId)
+		// Delete user from database
+		deletionError := DeleteUser(unsubscribePayload.EmailAddress, unsubscribePayload.UserId)
 
-
-		if !success {
-			w.WriteHeader(http.StatusBadRequest)
-			errMsg := "Failed to authenticate, or email address invalid"
-			
-			res, err := json.Marshal(Response{Success: success, ServerError: errMsg})
-			
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-			} else {
-				w.Write(res)
-			}
-			
-			return
-		}
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if deletionError != nil {
+			http.Error(w, deletionError.Error(), http.StatusConflict)
 			return
 		}
 	
 		w.Header().Set("Content-Type", "application/json")
-		res, err := json.Marshal(Response{Success: success})
+		res, err := json.Marshal(Response{Success: deletionError == nil})
 			
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)

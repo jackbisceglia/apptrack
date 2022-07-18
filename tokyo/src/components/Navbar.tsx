@@ -8,7 +8,7 @@ export default function Navbar() {
     <header className="px-4 pt-8 pb-20">
       <div className="font-bold">
         <h1 className="text-center text-header">APPTRACK</h1>
-        <nav className="mx-auto flex h-[36px] max-w-screen-sm items-start justify-center gap-2 text-xl">
+        <nav className="mx-auto flex h-[36px] max-w-screen-sm items-start justify-center gap-1.5 text-xl">
           <NavLink
             to="/"
             className={({ isActive }) =>
@@ -24,6 +24,14 @@ export default function Navbar() {
             }
           >
             POSTINGS
+          </NavLink>
+          <NavLink
+            to="/about"
+            className={({ isActive }) =>
+              isActive ? `${sharedStyles} text-red-500` : `${sharedStyles}`
+            }
+          >
+            ABOUT
           </NavLink>
         </nav>
       </div>
