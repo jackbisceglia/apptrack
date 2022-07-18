@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { API } from "../utils/constants";
 import Status from "../components/Status";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const [email, setEmail] = useState("");
@@ -72,7 +73,7 @@ export default function Home() {
         </h2>
         <p className="mb-4 text-lg">
           Receive daily updates on the latest 2023 summer internship and new
-          grad job postings.
+          grad job postings. Made possible by the community.
         </p>
         <fieldset disabled={status.state === "loading"}>
           <form onSubmit={handleSubmit}>

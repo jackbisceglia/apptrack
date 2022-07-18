@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import Message from "./components/Message";
 import Home from "./routes/Home";
 import Unsubscribe from "./routes/Unsubscribe";
+import About from "./routes/About";
 
 import { postingsMsg, unsubscribeMsg, notFoundMsg } from "./utils/constants";
 
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/postings" element={<Message message={postingsMsg} />} />
         <Route path="/unsubscribe" element={<Message message={unsubscribeMsg} />} />
         <Route path="/unsubscribe/:userId" element={<Unsubscribe />} />
+        <Route path="/about" element={<About/>}/>
         <Route path="*" element={<Message message={notFoundMsg} />} />
       </Routes>
       <Footer />
