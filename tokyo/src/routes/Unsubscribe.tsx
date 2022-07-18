@@ -17,7 +17,6 @@ export default function Unsubscribe() {
       setStatus({ message: "Missing Email Address", state: "error" });
       return false;
     }
-
     return true;
   }
 
@@ -35,6 +34,9 @@ export default function Unsubscribe() {
           userId: userId,
         }),
       });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
       const data = await response.json();
       if (data.Success) {
         setEmail("");
@@ -46,8 +48,12 @@ export default function Unsubscribe() {
         });
       }
     } catch (error) {
+      let errorMessage = "Something went wrong";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       setStatus({
-        message: "Something went wrong. Try again later.",
+        message: `${errorMessage.trim()}. Please try again.`,
         state: "error",
       });
     }
