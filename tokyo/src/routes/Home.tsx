@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { API } from "../utils/constants";
 import Status from "../components/Status";
-import { Link } from "react-router-dom";
 
 export default function Home() {
   const [email, setEmail] = useState("");
