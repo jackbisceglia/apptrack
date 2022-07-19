@@ -195,8 +195,6 @@ def update_db_postings(new_postings, is_intern):
 def send_mail(recipients, email_html, email_title):
     # setup
     FROM_EMAIL = 'jobs@apptrack.tech'
-    mailjet = Client(auth=(os.getenv("MAILJET_API_KEY"), os.getenv(
-        "MAILJET_API_SECRET_KEY")), version='v3.1')
 
     if recipients is None:
         print('no recipients')
@@ -207,26 +205,17 @@ def send_mail(recipients, email_html, email_title):
         unsub_link = '<div class="unsub_link"><a href="https://apptrack.tech/unsubscribe/' + \
             recipient['id']+'">Unsubscribe</a></div></div></body></html>'
         errors = []
-        data = {
-            'Messages': [
-                {
-                    "From": {
-                        "Email": FROM_EMAIL,
-                        "Name": "AppTrack"
-                    },
-                    "To": [
-                        {
-                            "Email": recipient['emailAddress'],
-                        }
-                    ],
-                    "Subject": email_title,
-                    "TextPart": "Table with postings.",
-                    "HTMLPart": email_html + unsub_link,
-                    "CustomID": "pittcscScraper"
-                }
-            ]
-        }
-        result = mailjet.send.create(data=data)
+        result = requests.post(
+            "https://api.mailgun.net/v3/mg.apptrack.tech/messages",
+            auth=("api", os.getenv("MAILGUN_API_KEY")),
+            data={
+                "from": "AppTrack " + FROM_EMAIL,
+                "to": [recipient['emailAddress']],
+                "subject": email_title,
+                "html": email_html + unsub_link
+            }
+        )
+
         print('email message status:', result.status_code)
         print(result.json())
         if int(result.status_code) != 200:
