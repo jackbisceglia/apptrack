@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/mail"
 	"strings"
 
 	"github.com/lib/pq"
@@ -53,8 +54,17 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 		return users
 	}
 
+	EmailIsValid := func (email string) bool {
+		_, err := mail.ParseAddress(email)
+		return err == nil
+	}
+
 	InsertUser := func(emailAddress string, listPreferences []string) error {
 		var preferenceString string
+
+		if !EmailIsValid(emailAddress) {
+			return errors.New("Invalid email address")
+		}
 
 		if len(listPreferences) > 1 {
 			preferenceString = "BOTH"
