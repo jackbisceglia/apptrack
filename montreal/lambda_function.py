@@ -22,13 +22,14 @@ def make_global_urls():
 
 
 def lambda_handler(event=None, context=None):
+    result = 'something sus'
     try:
         result = _lambda_handler_inner(event, context)
         return result
     except:
         print(result)
         print('Something went wrong, but I\'m not sure what...')
-        return None
+        return {"statusCode": 200}
 
 
 def _lambda_handler_inner(event=None, context=None):
@@ -67,11 +68,8 @@ def _lambda_handler_inner(event=None, context=None):
     if new_intern_postings_exist:
         intern_table = build_email_html(new_intern_postings)
         email_title = build_email_title(new_intern_postings)
-        try:
-            send_mail(intern_recipients, intern_table, email_title)
-        except:
-            print('ERROR sending intern mail ;(')
         update_db_postings(new_intern_postings, is_intern=False)
+        send_mail(intern_recipients, intern_table, email_title)
     else:
         print('No new intern postings!')
 
@@ -79,11 +77,8 @@ def _lambda_handler_inner(event=None, context=None):
     if new_new_grad_postings_exist:
         new_grad_table = build_email_html(new_new_grad_postings)
         email_title = build_email_title(new_new_grad_postings)
-        try:
-            send_mail(new_grad_recipients, new_grad_table, email_title)
-        except:
-            print('ERROR sending new grad mail ;(')
         update_db_postings(new_new_grad_postings, is_intern=False)
+        send_mail(new_grad_recipients, new_grad_table, email_title)
     else:
         print('No new new grad postings!')
 
@@ -217,25 +212,30 @@ def send_mail(recipients, email_html, email_title):
         return
 
     # send data
+    errors = []
     for recipient in recipients:
-        unsub_link = '<div class="unsub_link"><a href="https://apptrack.tech/unsubscribe/' + \
-            recipient['id']+'">Unsubscribe</a></div></div></body></html>'
-        errors = []
-        result = requests.post(
-            "https://api.mailgun.net/v3/mg.apptrack.tech/messages",
-            auth=("api", os.getenv("MAILGUN_API_KEY")),
-            data={
-                "from": "AppTrack " + FROM_EMAIL,
-                "to": [recipient['emailAddress']],
-                "subject": email_title,
-                "html": email_html + unsub_link
-            }
-        )
+        result = 'didn\'t get a result'
+        try:
+            unsub_link = '<div class="unsub_link"><a href="https://apptrack.tech/unsubscribe/' + \
+                recipient['id']+'">Unsubscribe</a></div></div></body></html>'
+            result = requests.post(
+                "https://api.mailgun.net/v3/mg.apptrack.tech/messages",
+                auth=("api", os.getenv("MAILGUN_API_KEY")),
+                data={
+                    "from": "AppTrack " + FROM_EMAIL,
+                    "to": [recipient['emailAddress']],
+                    "subject": email_title,
+                    "html": email_html + unsub_link
+                }
+            )
 
-        print('email message status:', result.status_code)
-        print(result.json())
-        if int(result.status_code) != 200:
-            errors.append((result.status_code, recipient['emailAddress']))
+            print('email message status:', result.status_code)
+            print(result.json())
+            if int(result.status_code) != 200:
+                errors.append((result.status_code, recipient['emailAddress']))
+        except:
+            errors.append(result)
+    print('email errors:', errors)
     return errors
 
 
