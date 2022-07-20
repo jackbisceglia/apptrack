@@ -8,6 +8,8 @@ import Unsubscribe from "./routes/Unsubscribe";
 import About from "./routes/About";
 
 import { postingsMsg, unsubscribeMsg, notFoundMsg } from "./utils/constants";
+import TOS from "./routes/info/TOS";
+import Privacy from "./routes/info/Privacy";
 
 // prettier-ignore
 export default function App() {
@@ -20,6 +22,10 @@ export default function App() {
         <Route path="/unsubscribe" element={<Message message={unsubscribeMsg} />} />
         <Route path="/unsubscribe/:userId" element={<Unsubscribe />} />
         <Route path="/about" element={<About/>}/>
+        <Route path="/info/">
+          <Route path="tos" element={<TOS/>} />
+          <Route path="privacy" element={<Privacy/>} />
+        </Route>
         <Route path="*" element={<Message message={notFoundMsg} />} />
       </Routes>
       <Footer />

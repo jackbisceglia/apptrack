@@ -75,6 +75,14 @@ export default function Footer() {
           </div>
         </div>
         <p className="text-center font-normal text-stone-500">{`${year} - AppTrack`}</p>
+        <p className="pt-1 text-center font-normal text-stone-500">
+          <a className="px-2" href="/info/privacy">
+            Privacy Policy
+          </a>
+          <a className="px-2" href="/info/tos">
+            Terms of Service
+          </a>
+        </p>
       </div>
     </footer>
   );
