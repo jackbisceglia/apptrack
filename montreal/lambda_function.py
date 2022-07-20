@@ -26,6 +26,7 @@ def lambda_handler(event=None, context=None):
         result = _lambda_handler_inner(event, context)
         return result
     except:
+        print(result)
         print('Something went wrong, but I\'m not sure what...')
         return None
 
