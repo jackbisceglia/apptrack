@@ -284,6 +284,3 @@ def build_posting_html(posting):
     result += posting['url']
     result += '">Apply</a></div>'
     return result
-
-
-lambda_handler()
