@@ -22,6 +22,15 @@ def make_global_urls():
 
 
 def lambda_handler(event=None, context=None):
+    try:
+        result = _lambda_handler_inner(event, context)
+        return result
+    except:
+        print('Something went wrong, but I\'m not sure what...')
+        return None
+
+
+def _lambda_handler_inner(event=None, context=None):
     make_global_urls()
     # fetch old postings from database
     intern_db_postings = get_postings_from_db(is_intern=True)
@@ -57,7 +66,10 @@ def lambda_handler(event=None, context=None):
     if new_intern_postings_exist:
         intern_table = build_email_html(new_intern_postings)
         email_title = build_email_title(new_intern_postings)
-        send_mail(intern_recipients, intern_table, email_title)
+        try:
+            send_mail(intern_recipients, intern_table, email_title)
+        except:
+            print('ERROR sending intern mail ;(')
         update_db_postings(new_intern_postings, is_intern=False)
     else:
         print('No new intern postings!')
@@ -66,7 +78,10 @@ def lambda_handler(event=None, context=None):
     if new_new_grad_postings_exist:
         new_grad_table = build_email_html(new_new_grad_postings)
         email_title = build_email_title(new_new_grad_postings)
-        send_mail(new_grad_recipients, new_grad_table, email_title)
+        try:
+            send_mail(new_grad_recipients, new_grad_table, email_title)
+        except:
+            print('ERROR sending new grad mail ;(')
         update_db_postings(new_new_grad_postings, is_intern=False)
     else:
         print('No new new grad postings!')
@@ -220,6 +235,7 @@ def send_mail(recipients, email_html, email_title):
         print(result.json())
         if int(result.status_code) != 200:
             errors.append((result.status_code, recipient['emailAddress']))
+    return errors
 
 
 def build_email_title(postings):
@@ -267,3 +283,6 @@ def build_posting_html(posting):
     result += posting['url']
     result += '">Apply</a></div>'
     return result
+
+
+lambda_handler()
