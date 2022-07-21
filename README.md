@@ -1,4 +1,4 @@
-﻿# internship-tracker
+﻿# [AppTrack](https://apptrack.tech)
  
 **Directory Structure (city: service)**
 - `sf/` &rarr; Golang REST API
