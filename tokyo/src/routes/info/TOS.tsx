@@ -297,7 +297,7 @@ export default function TOS() {
             contact us:
           </p>
           <ul>
-            <li>By email: jobs@mailgun.com</li>
+            <li>By email: nabilb@mit.edu</li>
           </ul>
         </div>
       </div>
