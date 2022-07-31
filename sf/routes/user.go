@@ -115,7 +115,7 @@ func UserRoutes(router *mux.Router, db *sql.DB) {
 
 
 	// ROUTE
-	HandleMultipleUserRoutes([]string{"", "/"}, postUserHandler, "POST")
-	HandleMultipleUserRoutes([]string{"/{apiKey}", "/{apiKey}/{listType}"}, getUsersHandler, "GET")
-	HandleMultipleUserRoutes([]string{"", "/"}, deleteUserHandler, "DELETE")
+	HandleMultipleUserRoutes([]string{"", "/"}, postUserHandler, "POST", true)
+	HandleMultipleUserRoutes([]string{"/{apiKey}", "/{apiKey}/{listType}"}, getUsersHandler, "GET", false)
+	HandleMultipleUserRoutes([]string{"", "/"}, deleteUserHandler, "DELETE", false)
 }
