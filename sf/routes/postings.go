@@ -75,6 +75,6 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 		w.Write(res)
 	}
 
-	HandleMultiplePostingRoutes([]string{"", "/"}, getPostingsHandler, "GET")
-	HandleMultiplePostingRoutes([]string{"", "/"}, postPostingsHandler, "POST")
+	HandleMultiplePostingRoutes([]string{"", "/"}, getPostingsHandler, "GET", false)
+	HandleMultiplePostingRoutes([]string{"", "/"}, postPostingsHandler, "POST", false)
 }
