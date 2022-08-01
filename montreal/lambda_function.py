@@ -41,56 +41,62 @@ def lambda_handler(event=None, context=None):
 
 def _lambda_handler_inner(event=None, context=None):
     make_global_urls()
-    # fetch old postings from database
+    print('fetching old postings from db')
     intern_db_postings = get_postings_from_db(Users.INTERN)
     new_grad_db_postings = get_postings_from_db(Users.NEW_GRAD)
 
-    # fetch all postings from web
+    print('fetching all postings from web')
     intern_web_postings = get_postings_from_web(Users.INTERN)
     new_grad_web_postings = get_postings_from_web(Users.NEW_GRAD)
 
-    # calculate which postings are new
+    print('calculating which postings are new')
     new_intern_postings = get_new_postings(intern_db_postings, intern_web_postings)
     new_new_grad_postings = get_new_postings(
         new_grad_db_postings, new_grad_web_postings
     )
-
+    
+    print('filtering for new postings')
     new_intern_postings_exist = new_intern_postings is not None and len(new_intern_postings) != 0
     new_new_grad_postings_exist = new_new_grad_postings is not None and len(new_new_grad_postings) != 0
 
     if new_intern_postings_exist and new_new_grad_postings_exist:
+        print('new intern and new grad postings exist')
         all_recipients = get_all_recipients_from_db()
         intern_recipients = filter_recipients(all_recipients, Users.INTERN)
         new_grad_recipients = filter_recipients(all_recipients, Users.NEW_GRAD)
         both_recipients = filter_recipients(all_recipients, Users.BOTH)
     elif new_intern_postings_exist:
+        print('new intern postings exist')
         intern_and_both_recipients = get_recipients_from_db_by_is_intern(Users.INTERN)
         intern_recipients = filter_recipients(intern_and_both_recipients, Users.INTERN)
         both_recipients = filter_recipients(intern_and_both_recipients, Users.BOTH)
     else:
+        print('new new grad postings exist')
         new_grad_and_both_recipients = get_recipients_from_db_by_is_intern(Users.NEW_GRAD)
         new_grad_recipients = filter_recipients(new_grad_and_both_recipients, Users.NEW_GRAD)
         both_recipients = filter_recipients(new_grad_and_both_recipients, Users.BOTH)
 
     # send out new intern postings if there are any
     if new_intern_postings_exist:
+        print('updating db and sending intern email')
         update_db_postings(new_intern_postings, Users.INTERN)
         intern_table = build_email_html(new_intern_postings)
-        email_title_intern = build_email_title(new_intern_postings)
+        email_title_intern = build_email_title(new_intern_postings, Users.INTERN)
         send_mail(intern_recipients, intern_table, email_title_intern)
-        email_title_both = build_email_title(new_intern_postings, Users.BOTH)
+        email_title_both = build_email_title(new_intern_postings, Users.BOTH, 'Intern')
         send_mail(both_recipients, intern_table, email_title_both)
     else:
         print('No new intern postings!')
 
     # send out new new grad postings if there are any
     if new_new_grad_postings_exist:
+        print('updating db and sending new grad email')
         update_db_postings(new_new_grad_postings, Users.NEW_GRAD)
         new_grad_table = build_email_html(new_new_grad_postings)
-        email_title = build_email_title(new_new_grad_postings)
-        send_mail(new_grad_recipients, new_grad_table, email_title)
-        email_title_both = build_email_title(new_intern_postings, Users.BOTH)
-        send_mail(both_recipients, intern_table, email_title_both)
+        email_title_new_grad = build_email_title(new_new_grad_postings, Users.NEW_GRAD)
+        send_mail(new_grad_recipients, new_grad_table, email_title_new_grad)
+        email_title_both = build_email_title(new_new_grad_postings, Users.BOTH, 'New Grad')
+        send_mail(both_recipients, new_grad_table, email_title_both)
     else:
         print('No new new grad postings!')
 
@@ -285,3 +291,6 @@ def build_posting_html(posting):
     result += posting['url']
     result += '">Apply</a></div>'
     return result
+
+if __name__ == '__main__':
+    lambda_handler()
