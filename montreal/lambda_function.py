@@ -269,19 +269,6 @@ def build_email_title(postings, user_type, posting_type=None):
     return initial + 'New job postings from ' + company_names_str + '!'
 
 
-def build_email_html_original(postings):
-    table = '<html><head></head><table><thead><tr><th>Name</th><th>Location</th><th>Notes</th></tr></thead><tbody>'
-    for posting in postings:
-        row = '<tr>'
-        row += '<td><a href=' + posting['url'] + ' rel="nofollow">' + posting['company'] + '</a></td>'
-        row += '<td>' + posting['location'] + '</td>'
-        row += '<td>' + posting['notes'] + '</td>'
-        row += '</tr>'
-        table += row
-    table += '</tbody></table>'
-    return table
-
-
 def build_email_html(postings):
     table = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>APPTRACK Daily Update</title><style>@import url("https://fonts.googleapis.com/css2?family=Sen:wght@400;700;800&display=swap");body{margin: 0;background-color: #f5f5f4;color: #292524;font-family: "Sen", sans-serif;}h1{text-align: center;margin: 0;padding-top: 40px;padding-bottom: 40px;font-size:48px;}h3{margin: 0;}p{margin-top: 10px;margin-bottom: 15px;}a{color: inherit !important;text-decoration: none!important;}.wrapper{max-width: 500px;margin: 0 auto;padding: 0 10px;}.post{display: table;width: 100%;margin-bottom: 40px;border-bottom: 2px solid #78716c;}.posting_link{display: table-cell;text-align: right;vertical-align: middle;color: #ef4444 !important;text-decoration: underline;min-width: 62px;font-size: 18px;}.posting_details{display: table-cell;width: 100%;}.unsub_link{text-align: center;text-decoration: underline;padding-bottom: 40px;}</style></head><body><div class="wrapper"><h1><a href="https://apptrack.tech" text-decoration: none;>APPTRACK</a></h1>'
     for posting in postings:
@@ -298,6 +285,3 @@ def build_posting_html(posting):
     result += posting['url']
     result += '">Apply</a></div>'
     return result
-
-
-lambda_handler()
