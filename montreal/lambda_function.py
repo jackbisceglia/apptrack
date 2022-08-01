@@ -4,8 +4,9 @@ from mailjet_rest import Client
 import json
 import os
 from dotenv import load_dotenv
+from enum import Enum
 
-# for dependencies: https://docs.aws.amazon.com/lambda/latest/dg/python-package.html
+# to add dependencies: https://docs.aws.amazon.com/lambda/latest/dg/python-package.html
 # user: id, timestamp, email, prefs
 # prefs: intern, new grad, or both
 
@@ -21,8 +22,14 @@ def make_global_urls():
     POSTINGS_URL = BASE_URL + '/postings'
 
 
+class Users(Enum):
+    BOTH = 0
+    INTERN = 1
+    NEW_GRAD = 2
+
+
 def lambda_handler(event=None, context=None):
-    result = 'something sus'
+    result = 'Perhaps the API isn\'t running?'
     try:
         result = _lambda_handler_inner(event, context)
         return result
@@ -35,57 +42,59 @@ def lambda_handler(event=None, context=None):
 def _lambda_handler_inner(event=None, context=None):
     make_global_urls()
     # fetch old postings from database
-    intern_db_postings = get_postings_from_db(is_intern=True)
-    new_grad_db_postings = get_postings_from_db(is_intern=False)
+    intern_db_postings = get_postings_from_db(Users.INTERN)
+    new_grad_db_postings = get_postings_from_db(Users.NEW_GRAD)
 
     # fetch all postings from web
-    intern_web_postings = get_postings_from_web(is_intern=True)
-    new_grad_web_postings = get_postings_from_web(is_intern=False)
+    intern_web_postings = get_postings_from_web(Users.INTERN)
+    new_grad_web_postings = get_postings_from_web(Users.NEW_GRAD)
 
     # calculate which postings are new
-    new_intern_postings = get_new_postings(
-        intern_db_postings, intern_web_postings)
+    new_intern_postings = get_new_postings(intern_db_postings, intern_web_postings)
     new_new_grad_postings = get_new_postings(
-        new_grad_db_postings, new_grad_web_postings)
+        new_grad_db_postings, new_grad_web_postings
+    )
 
-    new_intern_postings_exist = new_intern_postings is not None and len(
-        new_intern_postings) != 0
-    new_new_grad_postings_exist = new_new_grad_postings is not None and len(
-        new_new_grad_postings) != 0
+    new_intern_postings_exist = new_intern_postings is not None and len(new_intern_postings) != 0
+    new_new_grad_postings_exist = new_new_grad_postings is not None and len(new_new_grad_postings) != 0
 
     if new_intern_postings_exist and new_new_grad_postings_exist:
         all_recipients = get_all_recipients_from_db()
-        intern_recipients = filter_recipients(all_recipients, is_intern=True)
-        new_grad_recipients = filter_recipients(
-            all_recipients, is_intern=False)
+        intern_recipients = filter_recipients(all_recipients, Users.INTERN)
+        new_grad_recipients = filter_recipients(all_recipients, Users.NEW_GRAD)
+        both_recipients = filter_recipients(all_recipients, Users.BOTH)
     elif new_intern_postings_exist:
-        intern_recipients = get_recipients_from_db_by_is_intern(is_intern=True)
+        intern_and_both_recipients = get_recipients_from_db_by_is_intern(Users.INTERN)
+        intern_recipients = filter_recipients(intern_and_both_recipients, Users.INTERN)
+        both_recipients = filter_recipients(intern_and_both_recipients, Users.BOTH)
     else:
-        new_grad_recipients = get_recipients_from_db_by_is_intern(
-            is_intern=False)
+        new_grad_and_both_recipients = get_recipients_from_db_by_is_intern(Users.NEW_GRAD)
+        new_grad_recipients = filter_recipients(new_grad_and_both_recipients, Users.NEW_GRAD)
+        both_recipients = filter_recipients(new_grad_and_both_recipients, Users.BOTH)
 
     # send out new intern postings if there are any
     if new_intern_postings_exist:
+        update_db_postings(new_intern_postings, Users.INTERN)
         intern_table = build_email_html(new_intern_postings)
-        email_title = build_email_title(new_intern_postings)
-        update_db_postings(new_intern_postings, is_intern=False)
-        send_mail(intern_recipients, intern_table, email_title)
+        email_title_intern = build_email_title(new_intern_postings)
+        send_mail(intern_recipients, intern_table, email_title_intern)
+        email_title_both = build_email_title(new_intern_postings, Users.BOTH)
+        send_mail(both_recipients, intern_table, email_title_both)
     else:
         print('No new intern postings!')
 
     # send out new new grad postings if there are any
     if new_new_grad_postings_exist:
+        update_db_postings(new_new_grad_postings, Users.NEW_GRAD)
         new_grad_table = build_email_html(new_new_grad_postings)
         email_title = build_email_title(new_new_grad_postings)
-        update_db_postings(new_new_grad_postings, is_intern=False)
         send_mail(new_grad_recipients, new_grad_table, email_title)
+        email_title_both = build_email_title(new_intern_postings, Users.BOTH)
+        send_mail(both_recipients, intern_table, email_title_both)
     else:
         print('No new new grad postings!')
 
-    return {
-        'statusCode': 200,
-        'body': json.dumps('Postings sent!')
-    }
+    return {'statusCode': 200, 'body': json.dumps('Postings sent!')}
 
 
 def get_all_recipients_from_db():
@@ -100,34 +109,33 @@ def get_all_recipients_from_db():
     return data
 
 
-def get_recipients_from_db_by_is_intern(is_intern):
+def get_recipients_from_db_by_is_intern(user_type):
     GET_URL = USERS_URL
-    GET_URL += '/intern' if is_intern else '/newgrad'
+    GET_URL += '/intern' if user_type == Users.INTERN else '/newgrad'
 
     response = requests.get(GET_URL)
     if not response.ok:
-        target_group = 'intern' if is_intern else 'new grad'
-        print('Error fetching', target_group,
-              'recipients:', response.status_code)
+        target_group = 'intern' if user_type == Users.INTERN else 'new grad'
+        print('Error fetching', target_group, 'recipients:', response.status_code)
         return None
 
     data = response.json()
     return data
 
 
-def filter_recipients(recipients, is_intern):
+def filter_recipients(recipients, user_type):
     result = []
     for recipient in recipients:
-        if recipient['preferenceList'] == 'BOTH':
+        if recipient['preferenceList'] == 'BOTH' and user_type == Users.BOTH:
             result.append(recipient)
-        elif recipient['preferenceList'] == 'INTERN' and is_intern:
+        elif recipient['preferenceList'] == 'INTERN' and user_type == Users.INTERN:
             result.append(recipient)
-        elif recipient['preferenceList'] == 'NEWGRAD' and not is_intern:
+        elif recipient['preferenceList'] == 'NEWGRAD' and user_type == Users.NEW_GRAD:
             result.append(recipient)
     return result
 
 
-def get_postings_from_db(is_intern):
+def get_postings_from_db(user_type):
     GET_URL = POSTINGS_URL
 
     response = requests.get(GET_URL)
@@ -136,18 +144,17 @@ def get_postings_from_db(is_intern):
         return None
 
     data = response.json()
-    if is_intern:
+    if user_type == Users.INTERN:
         return data['InternPosts']
     else:
         return data['NewGradPosts']
 
 
-def get_postings_from_web(is_intern):
+def get_postings_from_web(user_type):
     PITTCSC_INTERNSHIP_URL = 'https://github.com/pittcsc/Summer2023-Internships'
     CODERQUAD_NEW_GRAD_URL = 'https://github.com/coderQuad/New-Grad-Positions-2023'
 
-    page = requests.get(
-        PITTCSC_INTERNSHIP_URL if is_intern else CODERQUAD_NEW_GRAD_URL)
+    page = requests.get(PITTCSC_INTERNSHIP_URL if user_type == Users.INTERN else CODERQUAD_NEW_GRAD_URL)
 
     data = []
     soup = BeautifulSoup(page.content, "html.parser")
@@ -174,7 +181,7 @@ def get_postings_from_web(is_intern):
             'url': posting[1],
             'location': posting[2],
             'notes': posting[3],
-            'isIntern': is_intern,
+            'isIntern': user_type == Users.INTERN,
         }
         result.append(json_posting)
 
@@ -195,11 +202,14 @@ def get_new_postings(db_postings_data, web_postings_data):
     return result
 
 
-def update_db_postings(new_postings, is_intern):
+def update_db_postings(new_postings, user_type):
     POST_URL = POSTINGS_URL
     response = requests.post(POST_URL, json=new_postings)
-    print('Attempting to update database with new ' +
-          ('intern ' if is_intern else 'new grad ') + 'postings...')
+    print(
+        'Attempting to update database with new '
+        + ('intern ' if user_type == Users.INTERN else 'new grad ')
+        + 'postings...'
+    )
     print(response)
 
 
@@ -216,8 +226,11 @@ def send_mail(recipients, email_html, email_title):
     for recipient in recipients:
         result = 'didn\'t get a result'
         try:
-            unsub_link = '<div class="unsub_link"><a href="https://apptrack.tech/unsubscribe/' + \
-                recipient['id']+'">Unsubscribe</a></div></div></body></html>'
+            unsub_link = (
+                '<div class="unsub_link"><a href="https://apptrack.tech/unsubscribe/'
+                + recipient['id']
+                + '">Unsubscribe</a></div></div></body></html>'
+            )
             result = requests.post(
                 "https://api.mailgun.net/v3/mg.apptrack.tech/messages",
                 auth=("api", os.getenv("MAILGUN_API_KEY")),
@@ -225,8 +238,8 @@ def send_mail(recipients, email_html, email_title):
                     "from": "AppTrack " + FROM_EMAIL,
                     "to": [recipient['emailAddress']],
                     "subject": email_title,
-                    "html": email_html + unsub_link
-                }
+                    "html": email_html + unsub_link,
+                },
             )
 
             print('email message status:', result.status_code)
@@ -239,29 +252,30 @@ def send_mail(recipients, email_html, email_title):
     return errors
 
 
-def build_email_title(postings):
-    if len(postings) == 1:
-        return 'New job posting from ' + postings[0]['company'] + '!'
-
+def build_email_title(postings, user_type, posting_type=None):
+    initial = ''
+    if user_type == Users.BOTH and posting_type is not None:
+        initial += '[' + posting_type + '] '
+        
     company_names = [posting['company'] for posting in postings]
+    if len(postings) == 1:
+        return initial + 'New job posting from ' + company_names[0] + '!'
     if len(postings) == 2:
         company_names_str = company_names[0] + ' and ' + company_names[1]
     elif len(postings) == 3:
-        company_names_str = ', '.join(
-            company_names[:-1]) + ', and ' + company_names[-1]
+        company_names_str = ', '.join(company_names[:-1]) + ', and ' + company_names[-1]
     else:
         company_names_str = ', '.join(company_names[:3]) + ', and more'
-    return 'New job postings from ' + company_names_str + '!'
+    return initial + 'New job postings from ' + company_names_str + '!'
 
 
 def build_email_html_original(postings):
     table = '<html><head></head><table><thead><tr><th>Name</th><th>Location</th><th>Notes</th></tr></thead><tbody>'
     for posting in postings:
         row = '<tr>'
-        row += '<td><a href=' + \
-            posting['url']+' rel="nofollow">'+posting['company']+'</a></td>'
-        row += '<td>'+posting['location']+'</td>'
-        row += '<td>'+posting['notes']+'</td>'
+        row += '<td><a href=' + posting['url'] + ' rel="nofollow">' + posting['company'] + '</a></td>'
+        row += '<td>' + posting['location'] + '</td>'
+        row += '<td>' + posting['notes'] + '</td>'
         row += '</tr>'
         table += row
     table += '</tbody></table>'
@@ -284,3 +298,6 @@ def build_posting_html(posting):
     result += posting['url']
     result += '">Apply</a></div>'
     return result
+
+
+lambda_handler()
