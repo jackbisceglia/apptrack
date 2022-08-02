@@ -16,9 +16,10 @@ func RouterUtils(router *mux.Router) func([]string, func(http.ResponseWriter, *h
 	HandleMultipleRoutes := func(routes []string, handler func(http.ResponseWriter, *http.Request), method string, limit bool) {
 		for _, route := range routes {
 			if limit {
-				router.Handle(route, tollbooth.LimitFuncHandler(tollbooth.NewLimiter(0.066, nil), handler))
+				router.Handle(route, tollbooth.LimitFuncHandler(tollbooth.NewLimiter(0.05, nil), handler)).Methods(method)
+			} else {
+				router.HandleFunc(route, handler).Methods(method)
 			}
-			router.HandleFunc(route, handler).Methods(method)
 		}
 	}
 
