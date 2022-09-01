@@ -12,9 +12,9 @@ import (
 )
 
 type User struct {
-	Id string `json:"id"`
-	CreatedAt string `json:"createdAt"`
-	EmailAddress string `json:"emailAddress"`
+	Id             string `json:"id"`
+	CreatedAt      string `json:"createdAt"`
+	EmailAddress   string `json:"emailAddress"`
 	PreferenceList string `json:"preferenceList"`
 }
 
@@ -36,14 +36,14 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 			log.Fatal(err)
 		}
 		defer rows.Close()
-	
+
 		var users []User
 		for rows.Next() {
 			err := rows.Scan(&user.Id, &user.CreatedAt, &user.EmailAddress, &user.PreferenceList)
 			if err != nil {
 				log.Fatal(err)
 			}
-	
+
 			users = append(users, user)
 		}
 
@@ -54,7 +54,7 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 		return users
 	}
 
-	EmailIsValid := func (email string) bool {
+	EmailIsValid := func(email string) bool {
 		_, err := mail.ParseAddress(email)
 		return err == nil
 	}
@@ -68,10 +68,10 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 
 		if len(listPreferences) > 1 {
 			preferenceString = "BOTH"
-		} else if (listPreferences[0] == "newgrad" || listPreferences[0] == "intern") {
+		} else if listPreferences[0] == "newgrad" || listPreferences[0] == "intern" {
 			preferenceString = strings.ToUpper(listPreferences[0])
 		} else {
-			return errors.New("Invalid preference choice");
+			return errors.New("Invalid preference choice")
 		}
 
 		SQL_STATEMENT := `
@@ -98,9 +98,9 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 		row := db.QueryRow("SELECT id FROM users WHERE emailAddress = $1", emailAddress)
 		err := row.Scan(&userIdByEmail)
 
-		if (err == sql.ErrNoRows) {
+		if err == sql.ErrNoRows {
 			return errors.New("That email address is not subscribed")
-		} else if (userId != userIdByEmail) {
+		} else if userId != userIdByEmail {
 			return errors.New("You do not have permission to unsubscribe that email address")
 		} else {
 			return nil
@@ -109,7 +109,7 @@ func UserCrud(db *sql.DB) (func(string) []User, func(string, []string) error, fu
 
 	DeleteUser := func(emailAddress string, userId string) error {
 		validationError := ValidateDeletion(emailAddress, userId)
-		if (validationError != nil) {
+		if validationError != nil {
 			return validationError
 		}
 

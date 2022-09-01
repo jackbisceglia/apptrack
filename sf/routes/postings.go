@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/jackbisceglia/internship-tracker/crud"
@@ -12,7 +13,7 @@ import (
 )
 
 type PostResponse struct {
-	InternPosts []crud.PostingData
+	InternPosts  []crud.PostingData
 	NewGradPosts []crud.PostingData
 }
 
@@ -21,7 +22,21 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 	GetPostings, InsertPosting := crud.PostingsCrud(db)
 
 	getPostingsHandler := func(w http.ResponseWriter, r *http.Request) {
-		postings := GetPostings()
+		var page int
+		pageParam, err := strconv.Atoi(r.URL.Query().Get("page"))
+		if err != nil || pageParam <= 0 {
+			page = -1
+		} else {
+			page = pageParam
+		}
+
+		listPreference := mux.Vars(r)["listPreference"]
+		if listPreference != string(crud.INTERN) && listPreference != string(crud.NEWGRAD) && listPreference != string(crud.BOTH) {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		postings := GetPostings(crud.ListPreference(listPreference), page)
 		internList := make([]crud.PostingData, 0)
 		newGradList := make([]crud.PostingData, 0)
 
@@ -70,11 +85,11 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(res)
 	}
 
-	HandleMultiplePostingRoutes([]string{"", "/"}, getPostingsHandler, "GET", false)
+	HandleMultiplePostingRoutes([]string{"", "/{listPreference}"}, getPostingsHandler, "GET", false)
 	HandleMultiplePostingRoutes([]string{"", "/"}, postPostingsHandler, "POST", false)
 }
