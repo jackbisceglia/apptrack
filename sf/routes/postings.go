@@ -13,8 +13,8 @@ import (
 )
 
 type PostResponse struct {
-	InternPosts  []crud.PostingData
-	NewGradPosts []crud.PostingData
+	Postings    []crud.PostingData `json:"postings"`
+	HasNextPage bool               `json:"hasNextPage"`
 }
 
 func PostingRoutes(router *mux.Router, db *sql.DB) {
@@ -36,19 +36,9 @@ func PostingRoutes(router *mux.Router, db *sql.DB) {
 			return
 		}
 
-		postings := GetPostings(crud.ListPreference(listPreference), page)
-		internList := make([]crud.PostingData, 0)
-		newGradList := make([]crud.PostingData, 0)
+		postings, hasMoreData := GetPostings(crud.ListPreference(listPreference), page)
 
-		for _, posting := range postings {
-			if posting.IsIntern {
-				internList = append(internList, posting)
-			} else {
-				newGradList = append(newGradList, posting)
-			}
-		}
-
-		res, err := json.Marshal(PostResponse{internList, newGradList})
+		res, err := json.Marshal(PostResponse{postings, hasMoreData})
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return

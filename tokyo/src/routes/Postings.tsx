@@ -33,16 +33,10 @@ function Postings() {
   const { isLoading, isFetching, isError, fetchNextPage, data, hasNextPage } =
     useInfiniteLoad([listSource]);
 
-  console.log(data);
-
   const handleListSourceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     // resets from cache, avoid current global page issue, but resets every time
     setListSource(e.target.value as listSourceOptions);
   };
-
-  if (isError) {
-    return <div>Error :(</div>;
-  }
 
   const flattenPostings = () =>
     data!.pages.map(({ postings }) => postings).flat();

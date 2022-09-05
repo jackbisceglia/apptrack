@@ -7,7 +7,7 @@ const useFadeIn = (position: number, fadeFactor: fadeFactorOptions) => {
   useEffect(() => {
     setTimeout(() => {
       setOpacity((opacity) => 100);
-    }, fadeFactor * 10 * (position % 10));
+    }, fadeFactor * 10 * ((position % 10) + 1));
   }, []);
   return opacity;
 };
