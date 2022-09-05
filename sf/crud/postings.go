@@ -68,11 +68,17 @@ func PostingsCrud(db *sql.DB) (func(ListPreference, int) ([]PostingData, bool), 
 			postings = append(postings, posting)
 		}
 
+		fmt.Printf("Query: %s %d\n", query.String(), len(postings))
 		if err := rows.Err(); err != nil {
 			log.Fatal(err)
 		}
 
-		return postings[:min(10, len(postings))], len(postings) > 10
+		// If no pagination, return all, else return 10 and hasNextPage
+		if page == -1 {
+			return postings, true
+		} else {
+			return postings[:min(10, len(postings))], len(postings) > 10
+		}
 	}
 
 	InsertPosting := func(posts []PostingData) bool {
