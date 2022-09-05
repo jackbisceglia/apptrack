@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
 import { API } from "../utils/constants";
 import Status from "../components/Status";
+import { useParams } from "react-router-dom";
+import { useState } from "react";
 
 export default function Unsubscribe() {
   const { userId } = useParams();

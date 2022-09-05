@@ -8,6 +8,13 @@ import (
 	"strings"
 )
 
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 type PostingData struct {
 	Company   string `json:"company"`
 	Location  string `json:"location"`
@@ -15,7 +22,7 @@ type PostingData struct {
 	IsIntern  bool   `json:"isIntern"`
 	Url       string `json:"url"`
 	Id        string
-	CreatedAt string
+	CreatedAt string `json:"createdAt"`
 }
 
 type ListPreference string
@@ -26,8 +33,8 @@ const (
 	BOTH    ListPreference = "both"
 )
 
-func PostingsCrud(db *sql.DB) (func(ListPreference, int) []PostingData, func([]PostingData) bool) {
-	GetPostings := func(listPreference ListPreference, page int) []PostingData {
+func PostingsCrud(db *sql.DB) (func(ListPreference, int) ([]PostingData, bool), func([]PostingData) bool) {
+	GetPostings := func(listPreference ListPreference, page int) ([]PostingData, bool) {
 		var posting PostingData
 		var query strings.Builder
 
@@ -42,8 +49,7 @@ func PostingsCrud(db *sql.DB) (func(ListPreference, int) []PostingData, func([]P
 		offset := (page - 1) * 10
 
 		if page != -1 {
-			query.WriteString(fmt.Sprintf(" LIMIT 10 OFFSET %d", offset))
-
+			query.WriteString(fmt.Sprintf(" ORDER BY \"createdAt\" LIMIT 11 OFFSET %d", offset))
 		}
 
 		rows, err := db.Query(query.String())
@@ -66,7 +72,7 @@ func PostingsCrud(db *sql.DB) (func(ListPreference, int) []PostingData, func([]P
 			log.Fatal(err)
 		}
 
-		return postings
+		return postings[:min(10, len(postings))], len(postings) > 10
 	}
 
 	InsertPosting := func(posts []PostingData) bool {

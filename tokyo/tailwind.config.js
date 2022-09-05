@@ -11,5 +11,10 @@ module.exports = {
       },
     },
   },
-  plugins: [require("@tailwindcss/line-clamp")],
+  plugins: [require("@tailwindcss/line-clamp")], 
+  content: ['./src/**/*.tsx'],
+  safelist: [
+    'opacity-0',
+    'opacity-100'
+  ]
 };
