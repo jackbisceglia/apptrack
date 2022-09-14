@@ -49,7 +49,7 @@ func PostingsCrud(db *sql.DB) (func(ListPreference, int) ([]PostingData, bool), 
 		offset := (page - 1) * 10
 
 		if page != -1 {
-			query.WriteString(fmt.Sprintf(" ORDER BY \"createdAt\" LIMIT 11 OFFSET %d", offset))
+			query.WriteString(fmt.Sprintf(" ORDER BY \"createdAt\" desc LIMIT 11 OFFSET %d", offset))
 		}
 
 		rows, err := db.Query(query.String())
