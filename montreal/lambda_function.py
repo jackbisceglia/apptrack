@@ -141,20 +141,35 @@ def filter_recipients(recipients, user_type):
     return result
 
 
+# def get_postings_from_db(user_type):
+#     GET_URL = POSTINGS_URL
+
+#     response = requests.get(GET_URL)
+#     if not response.ok:
+#         print('Error fetching postings from database:', response.status_code)
+#         return None
+
+#     data = response.json()
+#     if user_type == Users.INTERN:
+#         return data['InternPosts']
+#     else:
+#         return data['NewGradPosts']
+
+
 def get_postings_from_db(user_type):
-    GET_URL = POSTINGS_URL
+    SUFFIX = 'intern' if user_type == Users.INTERN else 'newgrad'
+
+    GET_URL = f'POSTINGS_URL/{SUFFIX}'
 
     response = requests.get(GET_URL)
+
     if not response.ok:
         print('Error fetching postings from database:', response.status_code)
         return None
 
     data = response.json()
-    if user_type == Users.INTERN:
-        return data['InternPosts']
-    else:
-        return data['NewGradPosts']
 
+    return data['postings']
 
 def get_postings_from_web(user_type):
     PITTCSC_INTERNSHIP_URL = 'https://github.com/pittcsc/Summer2023-Internships'
