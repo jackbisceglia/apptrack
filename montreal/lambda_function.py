@@ -21,7 +21,6 @@ def make_global_urls():
     USERS_URL = BASE_URL + '/users/' + os.getenv('USERS_API_KEY')
     POSTINGS_URL = BASE_URL + '/postings'
 
-
 class Users(Enum):
     BOTH = 0
     INTERN = 1
@@ -159,7 +158,7 @@ def filter_recipients(recipients, user_type):
 def get_postings_from_db(user_type):
     SUFFIX = 'intern' if user_type == Users.INTERN else 'newgrad'
 
-    GET_URL = f'POSTINGS_URL/{SUFFIX}'
+    GET_URL = f'{POSTINGS_URL}/{SUFFIX}'
 
     response = requests.get(GET_URL)
 
