@@ -1,10 +1,7 @@
-import { useEffect, useState } from "react";
-
-import { API } from "../utils/constants";
 import LoadMore from "../components/LoadMore";
 import SinglePosting from "../components/SinglePosting";
 import useInfiniteLoad from "../utils/useInfiniteLoad";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 export enum listSourceOptions {
   INTERN = "intern",
@@ -49,14 +46,15 @@ function Postings() {
           <div>Loading...</div>
         ) : (
           <>
-            <label>Posting Choice: </label>
+            <label>Show Postings For: </label>
             <select
               value={listSource}
               onChange={handleListSourceChange}
               id="listFilter"
               name="listFilter"
+              className="mb-4 rounded-md bg-stone-200 p-2"
             >
-              <option value={listSourceOptions.INTERN}>Intern</option>
+              <option value={listSourceOptions.INTERN}>Internship</option>
               <option value={listSourceOptions.NEWGRAD}>New Grad</option>
             </select>
             {flattenPostings().map((posting: PostingType, idx: number) => (
@@ -67,6 +65,7 @@ function Postings() {
                 createdAt={posting.createdAt}
                 location={posting.location}
                 isIntern={posting.isIntern}
+                url={posting.url}
               />
             ))}
             <LoadMore

@@ -9,6 +9,7 @@ function SinglePosting({
   createdAt,
   listPosition,
   isIntern,
+  url,
 }: PostPropTypes) {
   let opacity = useFadeIn(listPosition, 1);
 
@@ -16,15 +17,33 @@ function SinglePosting({
 
   return (
     <div
-      className={`flex w-auto justify-between border-b-2 border-gray-800 py-2 opacity-${opacity} transition-opacity duration-500 ease-in`}
+      className={`mb-4 flex items-center justify-between gap-4 border-b-2 border-stone-200 py-6 px-2 opacity-${opacity} transition-opacity duration-500 ease-in hover:rounded-md hover:bg-stone-200`}
     >
       <div>
-        <h1 className="font-bold">{company}</h1>
-        <h1>{location}</h1>
+        <span className="mr-2 inline-block text-lg font-bold">{company}</span>
+        <span
+          className={`inline-block rounded-md ${
+            isIntern ? "bg-blue-400" : "bg-orange-400"
+          } px-2 text-sm text-stone-50`}
+        >
+          {isIntern ? "Internship" : "New Grad"}
+        </span>
+        {/* <div className="flex items-center gap-2">
+          <h1 className="text-lg font-bold">{company}</h1>
+          <span
+            className={`block rounded-md ${
+              isIntern ? "bg-blue-400" : "bg-orange-400"
+            } px-2 text-sm text-stone-50`}
+          >
+            {isIntern ? "Internship" : "New Grad"}
+          </span>
+        </div> */}
+        <p className="text-stone-500">{location}</p>
       </div>
-      <div>
-        <h1 className="text-red-500">{postingDate.toDateString()}</h1>
-        <h1 className="">{isIntern ? "Internship" : "New Grad"}</h1>
+      <div className="shrink-0 rounded-md bg-stone-300 py-0.5 px-2 text-lg">
+        <a className="hover:underline" href={url}>
+          Apply
+        </a>
       </div>
     </div>
   );
