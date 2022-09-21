@@ -24,6 +24,29 @@ export type PostingsResponseType = {
   hasNextPage: boolean;
 };
 
+const LinkedInIntegration = ({
+  listSource,
+}: {
+  listSource: listSourceOptions;
+}) => {
+  const jobType = listSource === listSourceOptions.INTERN ? "intern" : "grad";
+
+  const linkedInQueryLink = `https://www.linkedin.com/jobs/search/?keywords=software%20${jobType}`;
+
+  return (
+    <p className="text-center">
+      Want to see more like this? Try{" "}
+      <a
+        target="_blank"
+        className="font-bold text-blue-600"
+        href={linkedInQueryLink}
+      >
+        LinkedIn
+      </a>
+    </p>
+  );
+};
+
 function Postings() {
   const [listSource, setListSource] = useState(listSourceOptions.INTERN);
 
@@ -73,6 +96,7 @@ function Postings() {
               fetchMore={fetchNextPage}
               hasNextPage={hasNextPage}
             />
+            <LinkedInIntegration listSource={listSource} />
           </>
         )}
       </div>

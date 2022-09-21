@@ -13,7 +13,7 @@ function SinglePosting({
 }: PostPropTypes) {
   let opacity = useFadeIn(listPosition, 1);
 
-  const postingDate = new Date(createdAt!);
+  const getPositionType = () => (isIntern ? "Internship" : "New Grad");
 
   return (
     <div
@@ -26,7 +26,7 @@ function SinglePosting({
             isIntern ? "bg-blue-400" : "bg-orange-400"
           } px-2 text-sm text-stone-50`}
         >
-          {isIntern ? "Internship" : "New Grad"}
+          {getPositionType()}
         </span>
         {/* <div className="flex items-center gap-2">
           <h1 className="text-lg font-bold">{company}</h1>
@@ -40,8 +40,8 @@ function SinglePosting({
         </div> */}
         <p className="text-stone-500">{location}</p>
       </div>
-      <div className="shrink-0 rounded-md bg-stone-300 py-0.5 px-2 text-lg">
-        <a className="hover:underline" href={url}>
+      <div className="shrink-0 rounded-md text-lg">
+        <a className="p-2 hover:underline" href={url}>
           Apply
         </a>
       </div>
