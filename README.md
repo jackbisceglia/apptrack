@@ -1,4 +1,8 @@
 ﻿# [AppTrack](https://apptrack.tech)
+
+##
+AppTrack is retired. Things broke with domain/lambdas after ~1 year, and never got around to fixing this. [https://simplify.jobs/](https://simplify.jobs/) seems to be doing good things around this same area, and is partnered with PittCSC
+
  
 **Directory Structure (city: service)**
 - `sf/` &rarr; Golang REST API
